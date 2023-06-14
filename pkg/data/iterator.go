@@ -16,7 +16,7 @@ func (d *DataIterator) Iterate(
 	params *simulator.OtherParams,
 	partitionIndex int,
 	stateHistories []*simulator.StateHistory,
-	timestepsHistory *simulator.TimestepsHistory,
+	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
 	d.CumulativeLogLike += d.logLikelihood.Evaluate(
 		params,

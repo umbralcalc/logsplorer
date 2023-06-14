@@ -9,16 +9,6 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-// LogLikelihood
-type LogLikelihood interface {
-	Evaluate(
-		params *simulator.OtherParams,
-		partitionIndex int,
-		stateHistories []*simulator.StateHistory,
-		timestepsHistory *simulator.TimestepsHistory,
-	) float64
-}
-
 // DataLinkingLogLikelihood
 type DataLinkingLogLikelihood interface {
 	Evaluate(

@@ -2,8 +2,19 @@ package learning
 
 import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
+
+// LogLikelihood
+type LogLikelihood interface {
+	Evaluate(
+		params *simulator.OtherParams,
+		partitionIndex int,
+		stateHistories []*simulator.StateHistory,
+		timestepsHistory *simulator.CumulativeTimestepsHistory,
+	) float64
+}
 
 // ConditionalProbability
 type ConditionalProbability interface {
@@ -17,48 +28,67 @@ type ConditionalProbability interface {
 
 // ProbabilityFilterLogLikelihood
 type ProbabilityFilterLogLikelihood struct {
-	conditionalProbability ConditionalProbability
+	prob ConditionalProbability
 }
 
 func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
 	params *simulator.OtherParams,
 	partitionIndex int,
 	stateHistories []*simulator.StateHistory,
-	timestepsHistory *simulator.TimestepsHistory,
+	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) *Statistics {
-	cumulativeWeightsSum := 0.0
-	mean := make([]float64, 0)
-	flatCov := make([]float64, 0)
-	for i, dataVector := range dataHistory {
-		// ignore first (most recent) value in the history as this
-		// is the one we want to compare to in the log-likelihood
-		if i == 0 {
+	stateHistory := stateHistories[partitionIndex]
+	currentTime := timestepsHistory.Values.AtVec(0)
+	currentStateValue := stateHistory.Values.RawRowView(0)
+	cumulativeWeightSum := 0.0
+	mean := make([]float64, stateHistory.StateWidth)
+	// i = 1 because we ignore the first (most recent) value in the history
+	// as this is the one we want to compare to in the log-likelihood
+	for i := 1; i < stateHistory.StateHistoryDepth; i++ {
+		weight := p.prob.Compute(
+			currentStateValue,
+			stateHistory.Values.RawRowView(i),
+			currentTime,
+			timestepsHistory.Values.AtVec(i),
+		)
+		cumulativeWeightSum += weight
+		if i == 1 {
+			for j := 0; j < stateHistory.StateWidth; j++ {
+				mean[j] = weight * stateHistory.Values.At(i, j)
+			}
 			continue
 		}
-		weight := ConditionalProbability(
-			dataHistory[0],
-			dataVector,
-			hyperparams,
-		)
-		cumulativeWeightsSum += weight
-		for j := range meanVector {
-			meanVector[j] += weight * dataVector[j]
+		for j := 0; j < stateHistory.StateWidth; j++ {
+			mean[j] += weight * stateHistory.Values.At(i, j)
 		}
 	}
-	// normalise the weights derived from the conditional probability
-	for j := range meanVector {
-		meanVector[j] /= cumulativeWeightsSum
+	meanVec := mat.NewVecDense(stateHistory.StateWidth, mean)
+	meanVec.ScaleVec(1.0/cumulativeWeightSum, meanVec)
+	statistics := &Statistics{Mean: meanVec}
+	// this next chunk to compute the covariance is a tweaked version from
+	// https://github.com/gonum/gonum/blob/v0.13.0/stat/statmat.go
+	// because we already have computed the mean so this'll be more efficient
+	var stateHistoryValuesTrans *mat.Dense
+	stateHistoryValuesTrans.CloneFrom(stateHistory.Values.T())
+	for j := 0; j < stateHistory.StateWidth; j++ {
+		floats.AddConst(-mean[j], stateHistoryValuesTrans.RawRowView(j))
 	}
-	stats := &Statistics{Mean: mat.NewVecDense(len(mean), mean)}
-	stats.SetCovariance(mat.NewSymDense(len(mean), flatCov))
-	return meanVector
+	covMat := mat.NewSymDense(stateHistory.StateWidth*stateHistory.StateWidth, nil)
+	covMat.SymOuterK(
+		1.0/cumulativeWeightSum,
+		stateHistoryValuesTrans.Slice(
+			0, stateHistory.StateWidth, 1, stateHistory.StateHistoryDepth,
+		),
+	)
+	statistics.SetCovariance(covMat)
+	return statistics
 }
 
 func (p *ProbabilityFilterLogLikelihood) Evaluate(
 	params *simulator.OtherParams,
 	partitionIndex int,
 	stateHistories []*simulator.StateHistory,
-	timestepsHistory *simulator.TimestepsHistory,
+	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) float64 {
 	// get the most recent point in the data history
 	dataVector := stateHistories[partitionIndex].Values.RowView(0)
