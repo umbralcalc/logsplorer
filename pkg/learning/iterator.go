@@ -1,15 +1,15 @@
-package data
+package learning
 
 import (
-	"github.com/umbralcalc/learnadex/pkg/learning"
+	"github.com/umbralcalc/learnadex/pkg/likelihood"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
 // DataIterator
 type DataIterator struct {
-	CumulativeLogLike float64
-	logLikelihood     learning.LogLikelihood
-	streamer          DataStreamer
+	CumulativeLogLikelihood float64
+	logLikelihood           likelihood.LogLikelihood
+	streamer                DataStreamer
 }
 
 func (d *DataIterator) Iterate(
@@ -18,7 +18,7 @@ func (d *DataIterator) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	d.CumulativeLogLike += d.logLikelihood.Evaluate(
+	d.CumulativeLogLikelihood += d.logLikelihood.Evaluate(
 		params,
 		partitionIndex,
 		stateHistories,
@@ -27,13 +27,14 @@ func (d *DataIterator) Iterate(
 	return d.streamer.NextValue()
 }
 
+// NewDataIterator creates a new DataIterator.
 func NewDataIterator(
-	logLikelihood learning.LogLikelihood,
+	logLikelihood likelihood.LogLikelihood,
 	streamer DataStreamer,
 ) *DataIterator {
 	return &DataIterator{
-		CumulativeLogLike: 0.0,
-		logLikelihood:     logLikelihood,
-		streamer:          streamer,
+		CumulativeLogLikelihood: 0.0,
+		logLikelihood:           logLikelihood,
+		streamer:                streamer,
 	}
 }

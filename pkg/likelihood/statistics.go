@@ -1,4 +1,4 @@
-package learning
+package likelihood
 
 import "gonum.org/v1/gonum/mat"
 

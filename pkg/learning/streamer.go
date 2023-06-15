@@ -1,4 +1,4 @@
-package data
+package learning
 
 // DataStreamer
 type DataStreamer interface {

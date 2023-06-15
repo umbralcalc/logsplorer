@@ -1,4 +1,4 @@
-package learning
+package likelihood
 
 import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
@@ -28,7 +28,8 @@ type ConditionalProbability interface {
 
 // ProbabilityFilterLogLikelihood
 type ProbabilityFilterLogLikelihood struct {
-	prob ConditionalProbability
+	prob     ConditionalProbability
+	dataLink DataLinkingLogLikelihood
 }
 
 func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
@@ -90,13 +91,15 @@ func (p *ProbabilityFilterLogLikelihood) Evaluate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) float64 {
-	// get the most recent point in the data history
-	dataVector := stateHistories[partitionIndex].Values.RowView(0)
-	stats := p.ComputeStatistics(dataHistory, hyperparams)
-	logLikelihood := DataLinkingLogProbability(
-		dataVector,
-		mean,
-		hyperparams,
+	statistics := p.ComputeStatistics(
+		params,
+		partitionIndex,
+		stateHistories,
+		timestepsHistory,
+	)
+	logLikelihood := p.dataLink.Evaluate(
+		statistics,
+		stateHistories[partitionIndex].Values.RawRowView(0),
 	)
 	return logLikelihood
 }
