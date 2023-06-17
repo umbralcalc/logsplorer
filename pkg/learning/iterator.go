@@ -5,9 +5,15 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
+// DataIteration
+type DataIteration interface {
+	GetObjective() float64
+	simulator.Iteration
+}
+
 // DataIterator
 type DataIterator struct {
-	CumulativeLogLikelihood float64
+	cumulativeLogLikelihood float64
 	logLikelihood           likelihood.LogLikelihood
 	streamer                DataStreamer
 }
@@ -18,7 +24,7 @@ func (d *DataIterator) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	d.CumulativeLogLikelihood += d.logLikelihood.Evaluate(
+	d.cumulativeLogLikelihood += d.logLikelihood.Evaluate(
 		params,
 		partitionIndex,
 		stateHistories,
@@ -27,13 +33,17 @@ func (d *DataIterator) Iterate(
 	return d.streamer.NextValue()
 }
 
+func (d *DataIterator) GetObjective() float64 {
+	return d.cumulativeLogLikelihood
+}
+
 // NewDataIterator creates a new DataIterator.
 func NewDataIterator(
 	logLikelihood likelihood.LogLikelihood,
 	streamer DataStreamer,
 ) *DataIterator {
 	return &DataIterator{
-		CumulativeLogLikelihood: 0.0,
+		cumulativeLogLikelihood: 0.0,
 		logLikelihood:           logLikelihood,
 		streamer:                streamer,
 	}
