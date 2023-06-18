@@ -1,12 +1,21 @@
 package learning
 
-import "github.com/umbralcalc/learnadex/pkg/likelihood"
+import (
+	"github.com/umbralcalc/learnadex/pkg/likelihood"
+	"github.com/umbralcalc/stochadex/pkg/simulator"
+)
+
+// DataStreamingConfig
+type DataStreamingConfig struct {
+	DataStreamer         DataStreamer
+	TimestepFunction     simulator.TimestepFunction
+	TerminationCondition simulator.TerminationCondition
+}
 
 // LearnerConfig
 type LearnerConfig struct {
-	Iterations []DataIteration
-	Streamer   DataStreamer
-	Objective  likelihood.LogLikelihood
+	Streaming  []DataStreamingConfig
+	Objectives []likelihood.LogLikelihood
 }
 
 // OptimiserConfig
@@ -15,6 +24,6 @@ type OptimiserConfig struct {
 
 // LearnadexConfig
 type LearnadexConfig struct {
-	Learner   *LearnerConfig
+	Learners  []*LearnerConfig
 	Optimiser *OptimiserConfig
 }

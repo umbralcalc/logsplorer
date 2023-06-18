@@ -6,15 +6,11 @@ import (
 
 // LearningOptimiser
 type LearningOptimiser struct {
-	Learner Learner
-}
-
-func (l *LearningOptimiser) Step(wg *sync.WaitGroup) {
-
+	Learners []Learner
 }
 
 func (l *LearningOptimiser) Run() {
-	var wg sync.WaitGroup
-
-	l.Step(&wg)
+	for _, learner := range l.Learners {
+		learner.Run(&sync.WaitGroup{})
+	}
 }
