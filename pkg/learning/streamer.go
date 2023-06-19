@@ -13,6 +13,7 @@ import (
 // DataStreamer defines the interface that must be implemented to
 // support streaming data from any source to a Learner.
 type DataStreamer interface {
+	Reset()
 	NextValue() []float64
 }
 
@@ -21,6 +22,10 @@ type DataStreamer interface {
 type CsvFileDataStreamer struct {
 	data         [][]float64
 	currentIndex int
+}
+
+func (c *CsvFileDataStreamer) Reset() {
+	c.currentIndex = 0
 }
 
 func (c *CsvFileDataStreamer) NextValue() []float64 {

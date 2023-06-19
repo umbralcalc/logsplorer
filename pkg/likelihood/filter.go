@@ -18,6 +18,7 @@ type LogLikelihood interface {
 
 // ConditionalProbability
 type ConditionalProbability interface {
+	SetParams(params *simulator.OtherParams)
 	Compute(
 		currentState []float64,
 		pastState []float64,
@@ -33,7 +34,6 @@ type ProbabilityFilterLogLikelihood struct {
 }
 
 func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
-	params *simulator.OtherParams,
 	partitionIndex int,
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
@@ -91,8 +91,8 @@ func (p *ProbabilityFilterLogLikelihood) Evaluate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) float64 {
+	p.prob.SetParams(params)
 	statistics := p.ComputeStatistics(
-		params,
 		partitionIndex,
 		stateHistories,
 		timestepsHistory,

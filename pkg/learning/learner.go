@@ -37,10 +37,12 @@ func (l *Learner) Run(wg *sync.WaitGroup) {
 	l.Step(wg)
 }
 
-// NewLearner creates a new Learner struct.
-func NewLearner(config *LearnerConfig) *Learner {
-	settings := &simulator.LoadSettingsConfig{}
-	// handle some typing nonsense
+// NewLearner creates a new Learner struct given a config and loaded settings.
+func NewLearner(
+	config *LearnerConfig,
+	settings *simulator.LoadSettingsConfig,
+) *Learner {
+	// handle some initial typing nonsense
 	iterations := make([]simulator.Iteration, 0)
 	dataIterations := make([]DataIteration, 0)
 	for i, objective := range config.Objectives {
@@ -50,6 +52,8 @@ func NewLearner(config *LearnerConfig) *Learner {
 	}
 	implementations := &simulator.LoadImplementationsConfig{
 		Iterations:           iterations,
+		OutputCondition:      &simulator.NilOutputCondition{},
+		OutputFunction:       &simulator.NilOutputFunction{},
 		TerminationCondition: config.Streaming[0].TerminationCondition,
 		TimestepFunction:     config.Streaming[0].TimestepFunction,
 	}
