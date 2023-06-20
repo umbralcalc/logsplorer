@@ -8,33 +8,52 @@ import (
 
 // Learner
 type Learner struct {
-	config             *LearnerConfig
-	stochadexConfig    *simulator.StochadexConfig
-	dataIterations     []DataIteration
-	objectiveHistories [][]float64
+	config          *LearnerConfig
+	stochadexConfig *simulator.StochadexConfig
+	dataIterations  []DataIteration
 }
 
-func (l *Learner) Step(wg *sync.WaitGroup) {
+func (l *Learner) ComputeObjectives() []float64 {
+	var wg sync.WaitGroup
+
 	// instantiate a new batch of data iterators via the stochadex
 	coordinator := simulator.NewPartitionCoordinator(l.stochadexConfig)
 
 	// run the iterations over the data and terminate the for loop
 	// when the end of data condition has been met
 	for !coordinator.ReadyToTerminate() {
-		coordinator.Step(wg)
+		coordinator.Step(&wg)
 	}
 
 	// store the objective values found in this step
-	for i, iteration := range l.dataIterations {
-		l.objectiveHistories[i] = append(
-			l.objectiveHistories[i],
-			iteration.GetObjective(),
-		)
+	objectives := make([]float64, 0)
+	for _, iteration := range l.dataIterations {
+		objectives = append(objectives, iteration.GetObjective())
 	}
+
+	// reset the stateful data iterators to be used again
+	l.ResetIterators()
+
+	return objectives
 }
 
-func (l *Learner) Run(wg *sync.WaitGroup) {
-	l.Step(wg)
+func (l *Learner) ReceiveAndSendObjectives(
+	inputChannel <-chan *LearnerInputMessage,
+	outputChannel chan<- *LearnerOutputMessage,
+) {
+	_ = <-inputChannel
+	outputChannel <- &LearnerOutputMessage{Objectives: l.ComputeObjectives()}
+}
+
+func (l *Learner) ResetIterators() {
+	for i, objective := range l.config.Objectives {
+		dataIterator := NewDataIterator(
+			objective,
+			l.config.Streaming[i].DataStreamer,
+		)
+		l.stochadexConfig.Partitions[i].Iteration = dataIterator
+		l.dataIterations[i] = dataIterator
+	}
 }
 
 // NewLearner creates a new Learner struct given a config and loaded settings.
@@ -62,9 +81,8 @@ func NewLearner(
 		implementations,
 	)
 	return &Learner{
-		config:             config,
-		stochadexConfig:    stochadexConfig,
-		dataIterations:     dataIterations,
-		objectiveHistories: make([][]float64, 0),
+		config:          config,
+		stochadexConfig: stochadexConfig,
+		dataIterations:  dataIterations,
 	}
 }

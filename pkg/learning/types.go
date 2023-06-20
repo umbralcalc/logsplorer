@@ -27,3 +27,12 @@ type LearnadexConfig struct {
 	Learners  []*LearnerConfig
 	Optimiser *OptimiserConfig
 }
+
+// LearnerInputMessage
+type LearnerInputMessage struct {
+}
+
+// LearnerOutputMessage
+type LearnerOutputMessage struct {
+	Objectives []float64
+}

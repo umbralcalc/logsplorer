@@ -30,7 +30,7 @@ func (d *DataIterator) Iterate(
 		stateHistories,
 		timestepsHistory,
 	)
-	return d.streamer.NextValue()
+	return d.streamer.NextValue(timestepsHistory)
 }
 
 func (d *DataIterator) GetObjective() float64 {
