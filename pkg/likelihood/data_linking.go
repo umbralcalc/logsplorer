@@ -11,7 +11,7 @@ import (
 // DataLinkingLogLikelihood
 type DataLinkingLogLikelihood interface {
 	Evaluate(
-		statistics *Statistics,
+		statistics Statistics,
 		data []float64,
 	) float64
 }
@@ -20,14 +20,15 @@ type DataLinkingLogLikelihood interface {
 type NormalDataLinkingLogLikelihood struct{}
 
 func (n *NormalDataLinkingLogLikelihood) Evaluate(
-	statistics *Statistics,
+	statistics Statistics,
 	data []float64,
 ) float64 {
-	return distmv.NormalLogProb(
-		data,
-		statistics.Mean.RawVector().Data,
-		statistics.GetCholeskyCovariance(),
+	dist, _ := distmv.NewNormal(
+		statistics.GetMean().RawVector().Data,
+		statistics.GetCovariance(),
+		rand.NewSource(0),
 	)
+	return dist.LogProb(data)
 }
 
 // GammaDataLinkingLogLikelihood
@@ -36,17 +37,18 @@ type GammaDataLinkingLogLikelihood struct {
 }
 
 func (g *GammaDataLinkingLogLikelihood) Evaluate(
-	statistics *Statistics,
+	statistics Statistics,
 	data []float64,
 ) float64 {
 	if g.dist == nil {
 		g.dist = &distuv.Gamma{Alpha: 1.0, Beta: 1.0, Src: rand.NewSource(0)}
 	}
 	logLike := 0.0
-	for i := 0; i < statistics.Mean.Len(); i++ {
-		g.dist.Beta = statistics.Mean.AtVec(i) / statistics.Covariance.At(i, i)
-		g.dist.Alpha = statistics.Mean.AtVec(i) *
-			statistics.Mean.AtVec(i) / statistics.Covariance.At(i, i)
+	mean := statistics.GetMean()
+	for i := 0; i < mean.Len(); i++ {
+		g.dist.Beta = mean.AtVec(i) * statistics.GetCovariance().At(i, i)
+		g.dist.Alpha = mean.AtVec(i) *
+			mean.AtVec(i) / statistics.GetCovariance().At(i, i)
 		logLike += g.dist.LogProb(data[i])
 	}
 	return logLike
@@ -58,15 +60,16 @@ type PoissonDataLinkingLogLikelihood struct {
 }
 
 func (p *PoissonDataLinkingLogLikelihood) Evaluate(
-	statistics *Statistics,
+	statistics Statistics,
 	data []float64,
 ) float64 {
 	if p.dist == nil {
 		p.dist = &distuv.Poisson{Lambda: 1.0, Src: rand.NewSource(0)}
 	}
 	logLike := 0.0
-	for i := 0; i < statistics.Mean.Len(); i++ {
-		p.dist.Lambda = statistics.Mean.AtVec(i)
+	mean := statistics.GetMean()
+	for i := 0; i < mean.Len(); i++ {
+		p.dist.Lambda = mean.AtVec(i)
 		logLike += p.dist.LogProb(data[i])
 	}
 	return logLike
@@ -76,14 +79,15 @@ func (p *PoissonDataLinkingLogLikelihood) Evaluate(
 type NegativeBinomialDataLinkingLogLikelihood struct{}
 
 func (n *NegativeBinomialDataLinkingLogLikelihood) Evaluate(
-	statistics *Statistics,
+	statistics Statistics,
 	data []float64,
 ) float64 {
 	logLike := 0.0
-	for i := 0; i < statistics.Mean.Len(); i++ {
-		r := statistics.Mean.AtVec(i) * statistics.Mean.AtVec(i) /
-			(statistics.Covariance.At(i, i) - statistics.Mean.AtVec(i))
-		p := statistics.Mean.AtVec(i) / statistics.Covariance.At(i, i)
+	mean := statistics.GetMean()
+	for i := 0; i < mean.Len(); i++ {
+		r := mean.AtVec(i) * mean.AtVec(i) /
+			(statistics.GetCovariance().At(i, i) - mean.AtVec(i))
+		p := mean.AtVec(i) / mean.At(i, i)
 		lg1, _ := math.Lgamma(r + data[i])
 		lg2, _ := math.Lgamma(data[i] + 1.0)
 		lg3, _ := math.Lgamma(data[i])
