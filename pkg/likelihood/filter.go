@@ -18,7 +18,7 @@ type LogLikelihood interface {
 // ConditionalProbability
 type ConditionalProbability interface {
 	SetParams(params *simulator.OtherParams)
-	Compute(
+	Evaluate(
 		currentState []float64,
 		pastState []float64,
 		currentTime float64,
@@ -45,7 +45,7 @@ func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
 	// i = 1 because we ignore the first (most recent) value in the history
 	// as this is the one we want to compare to in the log-likelihood
 	for i := 1; i < stateHistory.StateHistoryDepth; i++ {
-		weights[i] = p.prob.Compute(
+		weights[i] = p.prob.Evaluate(
 			currentStateValue,
 			stateHistory.Values.RawRowView(i),
 			currentTime,
@@ -64,8 +64,12 @@ func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
 	}
 	meanVec := mat.NewVecDense(stateHistory.StateWidth, mean)
 	meanVec.ScaleVec(1.0/cumulativeWeightSum, meanVec)
-	p.statistics.SetMean(meanVec)
-	p.statistics.ComputeOthers(weights, stateHistory, timestepsHistory)
+	p.statistics.ComputeAdditional(
+		meanVec,
+		weights,
+		stateHistory,
+		timestepsHistory,
+	)
 }
 
 func (p *ProbabilityFilterLogLikelihood) Evaluate(
