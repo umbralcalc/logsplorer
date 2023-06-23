@@ -1,4 +1,4 @@
-package likelihood
+package filter
 
 import (
 	"math"

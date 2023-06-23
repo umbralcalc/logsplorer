@@ -10,11 +10,18 @@ import (
 type Learner struct {
 	config          *LearnerConfig
 	stochadexConfig *simulator.StochadexConfig
-	dataIterations  []DataIteration
+	dataIterations  []*DataIterator
 }
 
-func (l *Learner) ComputeObjectives() []float64 {
+func (l *Learner) ComputeObjective(
+	newParams []*simulator.OtherParams,
+) float64 {
 	var wg sync.WaitGroup
+
+	// set the incoming new params for each state partition
+	for index := range l.stochadexConfig.Partitions {
+		l.stochadexConfig.Partitions[index].Params.Other = newParams[index]
+	}
 
 	// instantiate a new batch of data iterators via the stochadex
 	coordinator := simulator.NewPartitionCoordinator(l.stochadexConfig)
@@ -25,24 +32,26 @@ func (l *Learner) ComputeObjectives() []float64 {
 		coordinator.Step(&wg)
 	}
 
-	// store the objective values found in this step
-	objectives := make([]float64, 0)
+	// store the objective value found in this step
+	objective := 0.0
 	for _, iteration := range l.dataIterations {
-		objectives = append(objectives, iteration.GetObjective())
+		objective += iteration.GetObjective()
 	}
 
 	// reset the stateful data iterators to be used again
 	l.ResetIterators()
 
-	return objectives
+	return objective
 }
 
 func (l *Learner) ReceiveAndSendObjectives(
 	inputChannel <-chan *LearnerInputMessage,
 	outputChannel chan<- *LearnerOutputMessage,
 ) {
-	_ = <-inputChannel
-	outputChannel <- &LearnerOutputMessage{Objectives: l.ComputeObjectives()}
+	inputMessage := <-inputChannel
+	outputChannel <- &LearnerOutputMessage{
+		Objective: l.ComputeObjective(inputMessage.NewParams),
+	}
 }
 
 func (l *Learner) ResetIterators() {
@@ -63,7 +72,7 @@ func NewLearner(
 ) *Learner {
 	// handle some initial typing nonsense
 	iterations := make([]simulator.Iteration, 0)
-	dataIterations := make([]DataIteration, 0)
+	dataIterations := make([]*DataIterator, 0)
 	for i, objective := range config.Objectives {
 		dataIterator := NewDataIterator(objective, config.Streaming[i].DataStreamer)
 		iterations = append(iterations, dataIterator)

@@ -1,19 +1,9 @@
-package likelihood
+package filter
 
 import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gonum.org/v1/gonum/mat"
 )
-
-// LogLikelihood
-type LogLikelihood interface {
-	Evaluate(
-		params *simulator.OtherParams,
-		partitionIndex int,
-		stateHistories []*simulator.StateHistory,
-		timestepsHistory *simulator.CumulativeTimestepsHistory,
-	) float64
-}
 
 // ConditionalProbability
 type ConditionalProbability interface {
