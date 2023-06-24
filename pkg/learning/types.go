@@ -11,30 +11,20 @@ type DataStreamingConfig struct {
 	TerminationCondition simulator.TerminationCondition
 }
 
-// LearnerConfig
-type LearnerConfig struct {
+// LearningConfig
+type LearningConfig struct {
 	Streaming  []DataStreamingConfig
 	Objectives []LogLikelihood
 }
 
 // OptimiserConfig
 type OptimiserConfig struct {
-	Algorithm    OptimisationAlgorithm
-	HistoryDepth int
+	Algorithm     OptimisationAlgorithm
+	InitialParams *simulator.OtherParams
 }
 
 // LearnadexConfig
 type LearnadexConfig struct {
-	Learners  []*LearnerConfig
+	Learning  *LearningConfig
 	Optimiser *OptimiserConfig
-}
-
-// LearnerInputMessage
-type LearnerInputMessage struct {
-	NewParams []*simulator.OtherParams
-}
-
-// LearnerOutputMessage
-type LearnerOutputMessage struct {
-	Objective float64
 }

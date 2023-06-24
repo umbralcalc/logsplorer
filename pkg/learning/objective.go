@@ -6,14 +6,14 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-// Learner
-type Learner struct {
-	config          *LearnerConfig
+// LearningObjective
+type LearningObjective struct {
+	config          *LearningConfig
 	stochadexConfig *simulator.StochadexConfig
 	dataIterations  []*DataIterator
 }
 
-func (l *Learner) ComputeObjective(
+func (l *LearningObjective) Evaluate(
 	newParams []*simulator.OtherParams,
 ) float64 {
 	var wg sync.WaitGroup
@@ -44,17 +44,7 @@ func (l *Learner) ComputeObjective(
 	return objective
 }
 
-func (l *Learner) ReceiveAndSendObjectives(
-	inputChannel <-chan *LearnerInputMessage,
-	outputChannel chan<- *LearnerOutputMessage,
-) {
-	inputMessage := <-inputChannel
-	outputChannel <- &LearnerOutputMessage{
-		Objective: l.ComputeObjective(inputMessage.NewParams),
-	}
-}
-
-func (l *Learner) ResetIterators() {
+func (l *LearningObjective) ResetIterators() {
 	for i, objective := range l.config.Objectives {
 		dataIterator := NewDataIterator(
 			objective,
@@ -65,11 +55,12 @@ func (l *Learner) ResetIterators() {
 	}
 }
 
-// NewLearner creates a new Learner struct given a config and loaded settings.
-func NewLearner(
-	config *LearnerConfig,
+// NewLearningObjective creates a new LearningObjective struct given a config
+// and loaded settings.
+func NewLearningObjective(
+	config *LearningConfig,
 	settings *simulator.LoadSettingsConfig,
-) *Learner {
+) *LearningObjective {
 	// handle some initial typing nonsense
 	iterations := make([]simulator.Iteration, 0)
 	dataIterations := make([]*DataIterator, 0)
@@ -89,7 +80,7 @@ func NewLearner(
 		settings,
 		implementations,
 	)
-	return &Learner{
+	return &LearningObjective{
 		config:          config,
 		stochadexConfig: stochadexConfig,
 		dataIterations:  dataIterations,

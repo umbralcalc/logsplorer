@@ -11,7 +11,7 @@ import (
 )
 
 // DataStreamer defines the interface that must be implemented to
-// support streaming data from any source to a Learner.
+// support streaming data from any source to a LearningObjective.
 type DataStreamer interface {
 	NextValue(
 		timestepsHistory *simulator.CumulativeTimestepsHistory,
