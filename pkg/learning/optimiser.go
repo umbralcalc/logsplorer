@@ -19,7 +19,7 @@ type ParamsTranslator interface {
 // OptimisationAlgorithm
 type OptimisationAlgorithm interface {
 	Run(
-		learningObj LearningObjective,
+		learningObj *LearningObjective,
 		paramsTranslator ParamsTranslator,
 		initialParams []*simulator.OtherParams,
 	) []*simulator.OtherParams
@@ -31,14 +31,23 @@ type GonumOptimisationAlgorithm struct {
 }
 
 func (g *GonumOptimisationAlgorithm) Run(
-	learningObj LearningObjective,
+	learningObj *LearningObjective,
 	paramsTranslator ParamsTranslator,
 	initialParams []*simulator.OtherParams,
 ) []*simulator.OtherParams {
 	problem := optimize.Problem{
 		Func: func(x []float64) float64 {
-			return learningObj.Evaluate(
-				paramsTranslator.FromOptimiser(x, initialParams),
+			// this copying ensures thread safety (as required by
+			// the gonum optimize package)
+			learningObjCopy := *learningObj
+			learningObjCopy.ResetIterators()
+			paramsCopy := make([]*simulator.OtherParams, 0)
+			for i := range initialParams {
+				params := *initialParams[i]
+				paramsCopy = append(paramsCopy, &params)
+			}
+			return learningObjCopy.Evaluate(
+				paramsTranslator.FromOptimiser(x, paramsCopy),
 			)
 		},
 	}
