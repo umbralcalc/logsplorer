@@ -20,6 +20,7 @@ type LearningConfig struct {
 // OptimiserConfig
 type OptimiserConfig struct {
 	Algorithm     OptimisationAlgorithm
+	Translator    ParamsTranslator
 	InitialParams *simulator.OtherParams
 }
 

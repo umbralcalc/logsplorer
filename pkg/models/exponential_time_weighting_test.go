@@ -6,7 +6,7 @@ import (
 
 func TestExponentialTimeWeighting(t *testing.T) {
 	t.Run(
-		"test that the  exponential time weighting optimiser runs",
+		"test that the exponential time weighting optimiser runs",
 		func(t *testing.T) {
 
 		},
