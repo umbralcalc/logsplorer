@@ -22,9 +22,9 @@ type LogLikelihood interface {
 // extends this interface to include the ability to output an objective
 // function via the .GetObjective() method call.
 type DataIterator struct {
-	cumulativeLogLikelihood float64
 	logLikelihood           LogLikelihood
 	streamer                DataStreamer
+	cumulativeLogLikelihood float64
 }
 
 func (d *DataIterator) Iterate(
@@ -54,8 +54,8 @@ func NewDataIterator(
 	streamer DataStreamer,
 ) *DataIterator {
 	return &DataIterator{
-		cumulativeLogLikelihood: 0.0,
 		logLikelihood:           logLikelihood,
 		streamer:                streamer,
+		cumulativeLogLikelihood: 0.0,
 	}
 }

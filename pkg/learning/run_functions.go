@@ -9,7 +9,6 @@ func RunFilterParamsLearning(
 ) []*simulator.OtherParams {
 	return config.Optimiser.Algorithm.Run(
 		NewLearningObjective(config.Learning, settings),
-		config.Optimiser.Translator,
 		settings.OtherParams,
 	)
 }

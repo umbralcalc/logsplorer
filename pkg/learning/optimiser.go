@@ -7,6 +7,14 @@ import (
 	"gonum.org/v1/gonum/optimize"
 )
 
+// OptimisationAlgorithm
+type OptimisationAlgorithm interface {
+	Run(
+		learningObj *LearningObjective,
+		initialParams []*simulator.OtherParams,
+	) []*simulator.OtherParams
+}
+
 // ParamsTranslator
 type ParamsTranslator interface {
 	ToOptimiser(paramsToTranslate []*simulator.OtherParams) []float64
@@ -16,23 +24,14 @@ type ParamsTranslator interface {
 	) []*simulator.OtherParams
 }
 
-// OptimisationAlgorithm
-type OptimisationAlgorithm interface {
-	Run(
-		learningObj *LearningObjective,
-		paramsTranslator ParamsTranslator,
-		initialParams []*simulator.OtherParams,
-	) []*simulator.OtherParams
-}
-
 // GonumOptimisationAlgorithm
 type GonumOptimisationAlgorithm struct {
-	Method optimize.Method
+	Method     optimize.Method
+	Translator ParamsTranslator
 }
 
 func (g *GonumOptimisationAlgorithm) Run(
 	learningObj *LearningObjective,
-	paramsTranslator ParamsTranslator,
 	initialParams []*simulator.OtherParams,
 ) []*simulator.OtherParams {
 	problem := optimize.Problem{
@@ -47,13 +46,13 @@ func (g *GonumOptimisationAlgorithm) Run(
 				paramsCopy = append(paramsCopy, &params)
 			}
 			return learningObjCopy.Evaluate(
-				paramsTranslator.FromOptimiser(x, paramsCopy),
+				g.Translator.FromOptimiser(x, paramsCopy),
 			)
 		},
 	}
 	result, err := optimize.Minimize(
 		problem,
-		paramsTranslator.ToOptimiser(initialParams),
+		g.Translator.ToOptimiser(initialParams),
 		nil,
 		g.Method,
 	)

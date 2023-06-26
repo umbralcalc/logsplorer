@@ -30,54 +30,13 @@ func (c *CsvFileDataStreamer) NextValue(
 	return c.data[int(timestepsHistory.Values.AtVec(0))]
 }
 
-// NewCsvFileDataStreamer creates a new CsvFileDataStreamer given
-// the path to the file and a list of column indices to read in.
-func NewCsvFileDataStreamer(
-	filePath string,
-	columns []int,
-) *CsvFileDataStreamer {
-	f, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
-	}
-	defer f.Close()
-
-	// create this as a faster lookup
-	columnsMap := make(map[int]bool)
-	for _, column := range columns {
-		columnsMap[column] = true
-	}
-
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
-	}
-	data := make([][]float64, 0)
-	for _, row := range records {
-		floatRow := make([]float64, 0)
-		for i, r := range row {
-			_, ok := columnsMap[i]
-			if !ok {
-				continue
-			}
-			dataPoint, err := strconv.ParseFloat(r, 64)
-			if err != nil {
-				fmt.Printf("Error converting string: %v", err)
-			}
-			floatRow = append(floatRow, dataPoint)
-		}
-		data = append(data, floatRow)
-	}
-	return &CsvFileDataStreamer{data: data}
-}
-
 // NewCsvFileDataStreamingConfig creates a new DataStreamingConfig based on
 // read in csv file data and some specified columns for time and state.
 func NewCsvFileDataStreamingConfig(
 	filePath string,
 	timeColumn int,
 	stateColumns []int,
+	skipFirstRow bool,
 ) *DataStreamingConfig {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -99,6 +58,10 @@ func NewCsvFileDataStreamingConfig(
 	data := make([][]float64, 0)
 	timeData := make([]float64, 0)
 	for _, row := range records {
+		if skipFirstRow {
+			skipFirstRow = false
+			continue
+		}
 		floatRow := make([]float64, 0)
 		for i, r := range row {
 			if i == timeColumn {

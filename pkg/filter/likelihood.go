@@ -18,9 +18,9 @@ type ConditionalProbability interface {
 
 // ProbabilityFilterLogLikelihood
 type ProbabilityFilterLogLikelihood struct {
-	prob       ConditionalProbability
-	dataLink   DataLinkingLogLikelihood
-	statistics Statistics
+	Prob       ConditionalProbability
+	DataLink   DataLinkingLogLikelihood
+	Statistics Statistics
 }
 
 func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
@@ -35,7 +35,7 @@ func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
 	// i = 1 because we ignore the first (most recent) value in the history
 	// as this is the one we want to compare to in the log-likelihood
 	for i := 1; i < stateHistory.StateHistoryDepth; i++ {
-		weights[i] = p.prob.Evaluate(
+		weights[i] = p.Prob.Evaluate(
 			currentStateValue,
 			stateHistory.Values.RawRowView(i),
 			currentTime,
@@ -54,7 +54,7 @@ func (p *ProbabilityFilterLogLikelihood) ComputeStatistics(
 	}
 	meanVec := mat.NewVecDense(stateHistory.StateWidth, mean)
 	meanVec.ScaleVec(1.0/cumulativeWeightSum, meanVec)
-	p.statistics.ComputeAdditional(
+	p.Statistics.ComputeAdditional(
 		meanVec,
 		weights,
 		stateHistory,
@@ -68,10 +68,10 @@ func (p *ProbabilityFilterLogLikelihood) Evaluate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) float64 {
-	p.prob.SetParams(params)
+	p.Prob.SetParams(params)
 	p.ComputeStatistics(stateHistories[partitionIndex], timestepsHistory)
-	logLikelihood := p.dataLink.Evaluate(
-		p.statistics,
+	logLikelihood := p.DataLink.Evaluate(
+		p.Statistics,
 		stateHistories[partitionIndex].Values.RawRowView(0),
 	)
 	return logLikelihood
