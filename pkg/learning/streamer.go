@@ -36,7 +36,7 @@ func NewCsvFileDataStreamingConfig(
 	filePath string,
 	timeColumn int,
 	stateColumns []int,
-	skipFirstRow bool,
+	skipHeaderRow bool,
 ) *DataStreamingConfig {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -58,8 +58,8 @@ func NewCsvFileDataStreamingConfig(
 	data := make([][]float64, 0)
 	timeData := make([]float64, 0)
 	for _, row := range records {
-		if skipFirstRow {
-			skipFirstRow = false
+		if skipHeaderRow {
+			skipHeaderRow = false
 			continue
 		}
 		floatRow := make([]float64, 0)

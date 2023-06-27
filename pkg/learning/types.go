@@ -13,8 +13,9 @@ type DataStreamingConfig struct {
 
 // LearningConfig
 type LearningConfig struct {
-	Streaming  []*DataStreamingConfig
-	Objectives []LogLikelihood
+	BurnInSteps int
+	Streaming   []*DataStreamingConfig
+	Objectives  []LogLikelihood
 }
 
 // OptimiserConfig

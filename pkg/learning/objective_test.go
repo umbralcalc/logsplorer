@@ -32,6 +32,8 @@ func TestLearningObjective(t *testing.T) {
 	t.Run(
 		"test that the learning objective runs",
 		func(t *testing.T) {
+			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
+			extraSettings := NewExtraLoadSettingsConfigFromYaml("test_config.yaml")
 			streamingConfigs := make([]*DataStreamingConfig, 0)
 			streamingConfigs = append(
 				streamingConfigs,
@@ -57,7 +59,7 @@ func TestLearningObjective(t *testing.T) {
 				&filter.ProbabilityFilterLogLikelihood{
 					Prob: &dummyConditionalProbability{},
 					DataLink: &filter.NormalDataLinkingLogLikelihood{
-						Src: rand.NewSource(1234),
+						Src: rand.NewSource(settings.Seeds[0]),
 					},
 					Statistics: &filter.StandardCovarianceStatistics{},
 				},
@@ -67,16 +69,16 @@ func TestLearningObjective(t *testing.T) {
 				&filter.ProbabilityFilterLogLikelihood{
 					Prob: &dummyConditionalProbability{},
 					DataLink: &filter.NormalDataLinkingLogLikelihood{
-						Src: rand.NewSource(1234),
+						Src: rand.NewSource(settings.Seeds[1]),
 					},
 					Statistics: &filter.StandardCovarianceStatistics{},
 				},
 			)
 			config := &LearningConfig{
-				Streaming:  streamingConfigs,
-				Objectives: objectives,
+				BurnInSteps: extraSettings.BurnInSteps,
+				Streaming:   streamingConfigs,
+				Objectives:  objectives,
 			}
-			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
 			learningObjective := NewLearningObjective(config, settings)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 			learningObjective.ResetIterators()

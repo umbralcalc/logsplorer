@@ -25,6 +25,8 @@ type DataIterator struct {
 	logLikelihood           LogLikelihood
 	streamer                DataStreamer
 	cumulativeLogLikelihood float64
+	burnInSteps             int
+	stepsTaken              int
 }
 
 func (d *DataIterator) Iterate(
@@ -33,6 +35,10 @@ func (d *DataIterator) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
+	d.stepsTaken += 1
+	if d.stepsTaken <= d.burnInSteps {
+		return d.streamer.NextValue(timestepsHistory)
+	}
 	d.cumulativeLogLikelihood += d.logLikelihood.Evaluate(
 		params,
 		partitionIndex,
@@ -52,10 +58,13 @@ func (d *DataIterator) GetObjective() float64 {
 func NewDataIterator(
 	logLikelihood LogLikelihood,
 	streamer DataStreamer,
+	burnInSteps int,
 ) *DataIterator {
 	return &DataIterator{
 		logLikelihood:           logLikelihood,
 		streamer:                streamer,
 		cumulativeLogLikelihood: 0.0,
+		burnInSteps:             burnInSteps,
+		stepsTaken:              0,
 	}
 }

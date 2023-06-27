@@ -49,6 +49,7 @@ func (l *LearningObjective) ResetIterators() {
 		dataIterator := NewDataIterator(
 			objective,
 			l.config.Streaming[i].DataStreamer,
+			l.config.BurnInSteps,
 		)
 		l.stochadexConfig.Partitions[i].Iteration = dataIterator
 		l.dataIterations[i] = dataIterator
@@ -65,7 +66,11 @@ func NewLearningObjective(
 	iterations := make([]simulator.Iteration, 0)
 	dataIterations := make([]*DataIterator, 0)
 	for i, objective := range config.Objectives {
-		dataIterator := NewDataIterator(objective, config.Streaming[i].DataStreamer)
+		dataIterator := NewDataIterator(
+			objective,
+			config.Streaming[i].DataStreamer,
+			config.BurnInSteps,
+		)
 		iterations = append(iterations, dataIterator)
 		dataIterations = append(dataIterations, dataIterator)
 	}
