@@ -1,7 +1,5 @@
 github.com/akamensky/argparse v1.4.0 h1:YGzvsTqCvbEZhL8zZu2AiA5nq805NZh75JNj4ajn1xc=
 github.com/akamensky/argparse v1.4.0/go.mod h1:S5kwC7IuDcEr5VeXtGPRVZ5o/FdhcMlQz4IZQuw64xA=
-github.com/umbralcalc/stochadex v0.0.0-20230627061528-00d94a8005a3 h1:PKMwdM9MYGOizTd28EUt6aNetNEamEljwfWGHp9Hz6s=
-github.com/umbralcalc/stochadex v0.0.0-20230627061528-00d94a8005a3/go.mod h1:c2RRn+zmXGZPeLhONsKtukSAVEGSV1N9GJ0+XgPpz+Y=
 github.com/umbralcalc/stochadex v0.0.0-20230627062614-b06c3d773557 h1:5HDapvqePsYG5zf34Ic2VZTty04iGW6N1YDQu5arxsA=
 github.com/umbralcalc/stochadex v0.0.0-20230627062614-b06c3d773557/go.mod h1:c2RRn+zmXGZPeLhONsKtukSAVEGSV1N9GJ0+XgPpz+Y=
 golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df h1:UA2aFVmmsIlefxMk29Dp2juaUSth8Pyn3Tq5Y5mJGME=
