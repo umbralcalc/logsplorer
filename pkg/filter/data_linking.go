@@ -8,13 +8,16 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-// DataLinkingLogLikelihood
+// DataLinkingLogLikelihood is the interface that must be implemented in
+// order to create a likelihood that connects derived statistics from the
+// probability filter to observed actual data values.
 type DataLinkingLogLikelihood interface {
 	Evaluate(statistics Statistics, data []float64) float64
 	GenerateNewSamples(statistics Statistics) []float64
 }
 
-// NormalDataLinkingLogLikelihood
+// NormalDataLinkingLogLikelihood assumes the real data are well described
+// by a normal distribution, given the statistics provided by the filter.
 type NormalDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -42,7 +45,8 @@ func (n *NormalDataLinkingLogLikelihood) GenerateNewSamples(
 	return dist.Rand(nil)
 }
 
-// GammaDataLinkingLogLikelihood
+// GammaDataLinkingLogLikelihood assumes the real data are well described
+// by a gamma distribution, given the statistics provided by the filter.
 type GammaDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -78,7 +82,8 @@ func (g *GammaDataLinkingLogLikelihood) GenerateNewSamples(
 	return samples
 }
 
-// PoissonDataLinkingLogLikelihood
+// PoissonDataLinkingLogLikelihood assumes the real data are well described
+// by a Poisson distribution, given the statistics provided by the filter.
 type PoissonDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -110,7 +115,9 @@ func (p *PoissonDataLinkingLogLikelihood) GenerateNewSamples(
 	return samples
 }
 
-// NegativeBinomialDataLinkingLogLikelihood
+// NegativeBinomialDataLinkingLogLikelihood assumes the real data are well
+// described by a negative binomial distribution, given the statistics
+// provided by the filter.
 type NegativeBinomialDataLinkingLogLikelihood struct {
 	Src rand.Source
 }

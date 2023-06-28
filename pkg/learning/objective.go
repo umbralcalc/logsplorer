@@ -6,7 +6,9 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-// LearningObjective
+// LearningObjective evaluates the objective function that needs to be optimised
+// by running the stochadex simulator as a data iterator and computing the
+// cumulative log-likelihood.
 type LearningObjective struct {
 	config          *LearningConfig
 	stochadexConfig *simulator.StochadexConfig

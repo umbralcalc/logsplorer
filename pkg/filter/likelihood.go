@@ -5,7 +5,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// ConditionalProbability
+// ConditionalProbability is the interface that must be implemented in order
+// to provide a conditionaly probability for the filtering algorithm.
 type ConditionalProbability interface {
 	SetParams(params *simulator.OtherParams)
 	Evaluate(
@@ -16,7 +17,9 @@ type ConditionalProbability interface {
 	) float64
 }
 
-// ProbabilityFilterLogLikelihood
+// ProbabilityFilterLogLikelihood composes a provided data linking log-likelihood
+// together with a provided conditional probability in order to implement the
+// empirical probability filter algorithm as a LogLikelihood interface type.
 type ProbabilityFilterLogLikelihood struct {
 	Prob       ConditionalProbability
 	DataLink   DataLinkingLogLikelihood

@@ -7,7 +7,9 @@ import (
 	"gonum.org/v1/gonum/optimize"
 )
 
-// OptimisationAlgorithm
+// OptimisationAlgorithm defines the interface that must be implemented
+// in order to specify an algorithm that can optimise the learning
+// objective specified.
 type OptimisationAlgorithm interface {
 	Run(
 		learningObj *LearningObjective,
@@ -15,7 +17,12 @@ type OptimisationAlgorithm interface {
 	) []*simulator.OtherParams
 }
 
-// ParamsTranslator
+// ParamsTranslator defines the interface that must be implemented in order
+// to translate the params which are passed to the probability filter
+// algorithm into a form which the optimiser OptimimisationAlgorithm can
+// always use. Writing this translator for a specific problem domain also
+// enables only translating a subset of all of the parameters if only
+// optimising a subset is desired.
 type ParamsTranslator interface {
 	ToOptimiser(paramsToTranslate []*simulator.OtherParams) []float64
 	FromOptimiser(
@@ -24,7 +31,8 @@ type ParamsTranslator interface {
 	) []*simulator.OtherParams
 }
 
-// GonumOptimisationAlgorithm
+// GonumOptimisationAlgorithm allows any of the gonum optimisers to be
+// used in the learnadex.
 type GonumOptimisationAlgorithm struct {
 	Method     optimize.Method
 	Translator ParamsTranslator

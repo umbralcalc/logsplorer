@@ -8,7 +8,9 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// Statistics
+// Statistics defines the interface that must be implemented in order to
+// specify how to estimate the statistics of the empirical distribution
+// in the probability filtering algorithm.
 type Statistics interface {
 	GetMean() *mat.VecDense
 	GetCovariance() *mat.SymDense

@@ -11,7 +11,7 @@ import (
 
 // ExtraLoadSettingsConfig is the yaml-loadable config extends the settings available
 // the stochasdex simulator.LoadSettingsConfig to include settings that are only
-// necessary in the learnadex.
+// necessary in the learnadex package.
 type ExtraLoadSettingsConfig struct {
 	BurnInSteps int `yaml:"burn_in_steps"`
 }
