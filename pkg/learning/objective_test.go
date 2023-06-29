@@ -28,57 +28,61 @@ func (d *dummyConditionalProbability) Evaluate(
 	return d.value
 }
 
+func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
+	extraSettings := NewExtraLoadSettingsConfigFromYaml("test_config.yaml")
+	streamingConfigs := make([]*DataStreamingConfig, 0)
+	streamingConfigs = append(
+		streamingConfigs,
+		NewMemoryDataStreamingConfigFromCsv(
+			"test_file.csv",
+			0,
+			[]int{1, 2, 3},
+			true,
+		),
+	)
+	streamingConfigs = append(
+		streamingConfigs,
+		NewMemoryDataStreamingConfigFromCsv(
+			"test_file.csv",
+			0,
+			[]int{1, 2, 3},
+			true,
+		),
+	)
+	objectives := make([]LogLikelihood, 0)
+	objectives = append(
+		objectives,
+		&filter.ProbabilityFilterLogLikelihood{
+			Prob: &dummyConditionalProbability{},
+			DataLink: &filter.NormalDataLinkingLogLikelihood{
+				Src: rand.NewSource(settings.Seeds[0]),
+			},
+			Statistics: &filter.StandardCovarianceStatistics{},
+		},
+	)
+	objectives = append(
+		objectives,
+		&filter.ProbabilityFilterLogLikelihood{
+			Prob: &dummyConditionalProbability{},
+			DataLink: &filter.NormalDataLinkingLogLikelihood{
+				Src: rand.NewSource(settings.Seeds[1]),
+			},
+			Statistics: &filter.StandardCovarianceStatistics{},
+		},
+	)
+	return &LearningConfig{
+		BurnInSteps: extraSettings.BurnInSteps,
+		Streaming:   streamingConfigs,
+		Objectives:  objectives,
+	}
+}
+
 func TestLearningObjective(t *testing.T) {
 	t.Run(
 		"test that the learning objective runs",
 		func(t *testing.T) {
 			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
-			extraSettings := NewExtraLoadSettingsConfigFromYaml("test_config.yaml")
-			streamingConfigs := make([]*DataStreamingConfig, 0)
-			streamingConfigs = append(
-				streamingConfigs,
-				NewCsvFileDataStreamingConfig(
-					"test_file.csv",
-					0,
-					[]int{1, 2, 3},
-					true,
-				),
-			)
-			streamingConfigs = append(
-				streamingConfigs,
-				NewCsvFileDataStreamingConfig(
-					"test_file.csv",
-					0,
-					[]int{1, 2, 3},
-					true,
-				),
-			)
-			objectives := make([]LogLikelihood, 0)
-			objectives = append(
-				objectives,
-				&filter.ProbabilityFilterLogLikelihood{
-					Prob: &dummyConditionalProbability{},
-					DataLink: &filter.NormalDataLinkingLogLikelihood{
-						Src: rand.NewSource(settings.Seeds[0]),
-					},
-					Statistics: &filter.StandardCovarianceStatistics{},
-				},
-			)
-			objectives = append(
-				objectives,
-				&filter.ProbabilityFilterLogLikelihood{
-					Prob: &dummyConditionalProbability{},
-					DataLink: &filter.NormalDataLinkingLogLikelihood{
-						Src: rand.NewSource(settings.Seeds[1]),
-					},
-					Statistics: &filter.StandardCovarianceStatistics{},
-				},
-			)
-			config := &LearningConfig{
-				BurnInSteps: extraSettings.BurnInSteps,
-				Streaming:   streamingConfigs,
-				Objectives:  objectives,
-			}
+			config := newLearningConfigForTests(settings)
 			learningObjective := NewLearningObjective(config, settings)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 			learningObjective.ResetIterators()

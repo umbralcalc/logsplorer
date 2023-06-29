@@ -18,21 +18,21 @@ type DataStreamer interface {
 	) []float64
 }
 
-// CsvFileDataStreamer provides a stream of data that has been read
-// in from a csv file.
-type CsvFileDataStreamer struct {
-	data [][]float64
+// MemoryDataStreamer provides a stream of data that is held in memory.
+type MemoryDataStreamer struct {
+	Data [][]float64
 }
 
-func (c *CsvFileDataStreamer) NextValue(
+func (c *MemoryDataStreamer) NextValue(
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	return c.data[int(timestepsHistory.Values.AtVec(0))]
+	return c.Data[int(timestepsHistory.Values.AtVec(0))]
 }
 
-// NewCsvFileDataStreamingConfig creates a new DataStreamingConfig based on
-// read in csv file data and some specified columns for time and state.
-func NewCsvFileDataStreamingConfig(
+// NewMemoryDataStreamingConfigFromCsv creates a new DataStreamingConfig for a
+// MemoryDataStreamer based on data that is read in from the provided csv file
+// and some specified columns for time and state.
+func NewMemoryDataStreamingConfigFromCsv(
 	filePath string,
 	timeColumn int,
 	stateColumns []int,
@@ -85,7 +85,7 @@ func NewCsvFileDataStreamingConfig(
 		data = append(data, floatRow)
 	}
 	return &DataStreamingConfig{
-		DataStreamer:     &CsvFileDataStreamer{data: data},
+		DataStreamer:     &MemoryDataStreamer{Data: data},
 		TimestepFunction: &simulator.ConstantTimestepFunction{Stepsize: 1},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
 			MaxNumberOfSteps: len(timeData),

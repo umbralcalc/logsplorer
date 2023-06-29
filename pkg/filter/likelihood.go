@@ -17,6 +17,21 @@ type ConditionalProbability interface {
 	) float64
 }
 
+// UniformConditionalProbability implies a flat rolling window into the past to
+// compute empirical statistics with.
+type UniformConditionalProbability struct{}
+
+func SetParams(params *simulator.OtherParams) {}
+
+func Evaluate(
+	currentState []float64,
+	pastState []float64,
+	currentTime float64,
+	pastTime float64,
+) float64 {
+	return 1.0
+}
+
 // ProbabilityFilterLogLikelihood composes a provided data linking log-likelihood
 // together with a provided conditional probability in order to implement the
 // empirical probability filter algorithm as a LogLikelihood interface type.
