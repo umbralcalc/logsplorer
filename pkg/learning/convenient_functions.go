@@ -1,8 +1,10 @@
 package learning
 
-import "github.com/umbralcalc/stochadex/pkg/simulator"
+import (
+	"github.com/umbralcalc/stochadex/pkg/simulator"
+)
 
-// RunFilterParamsLearning is a convenience function which runs a
+// RunFilterParamsLearning is a convenient function which runs a
 // an optimisation of the probability filter for a particular dataset
 // which is provided by the data streamer.
 func RunFilterParamsLearning(
