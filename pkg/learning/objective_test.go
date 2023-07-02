@@ -31,24 +31,20 @@ func (d *dummyConditionalProbability) Evaluate(
 func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
 	extraSettings := NewExtraLoadSettingsConfigFromYaml("test_config.yaml")
 	streamingConfigs := make([]*DataStreamingConfig, 0)
-	streamingConfigs = append(
-		streamingConfigs,
-		NewMemoryDataStreamingConfigFromCsv(
-			"test_file.csv",
-			0,
-			[]int{1, 2, 3},
-			true,
-		),
+	streamingConfig, _ := NewMemoryDataStreamingConfigFromCsv(
+		"test_file.csv",
+		0,
+		[]int{1, 2, 3},
+		true,
 	)
-	streamingConfigs = append(
-		streamingConfigs,
-		NewMemoryDataStreamingConfigFromCsv(
-			"test_file.csv",
-			0,
-			[]int{1, 2, 3},
-			true,
-		),
+	streamingConfigs = append(streamingConfigs, streamingConfig)
+	anotherStreamingConfig, _ := NewMemoryDataStreamingConfigFromCsv(
+		"test_file.csv",
+		0,
+		[]int{1, 2, 3},
+		true,
 	)
+	streamingConfigs = append(streamingConfigs, anotherStreamingConfig)
 	objectives := make([]LogLikelihood, 0)
 	objectives = append(
 		objectives,

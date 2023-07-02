@@ -31,13 +31,14 @@ func (c *MemoryDataStreamer) NextValue(
 
 // NewMemoryDataStreamingConfigFromCsv creates a new DataStreamingConfig for a
 // MemoryDataStreamer based on data that is read in from the provided csv file
-// and some specified columns for time and state.
+// and some specified columns for time and state. The function also outputs
+// a slice of time datapoints taken from the csv file for convenience.
 func NewMemoryDataStreamingConfigFromCsv(
 	filePath string,
 	timeColumn int,
 	stateColumns []int,
 	skipHeaderRow bool,
-) *DataStreamingConfig {
+) (*DataStreamingConfig, []float64) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
@@ -90,5 +91,5 @@ func NewMemoryDataStreamingConfigFromCsv(
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
 			MaxNumberOfSteps: len(timeData),
 		},
-	}
+	}, timeData
 }

@@ -19,15 +19,13 @@ func newSimpleLearningConfigForTests(
 ) *learning.LearningConfig {
 	extraSettings := learning.NewExtraLoadSettingsConfigFromYaml(extraSettingsConfigPath)
 	streamingConfigs := make([]*learning.DataStreamingConfig, 0)
-	streamingConfigs = append(
-		streamingConfigs,
-		learning.NewMemoryDataStreamingConfigFromCsv(
-			"test_file.csv",
-			0,
-			[]int{1, 2, 3},
-			true,
-		),
+	streamingConfig, _ := learning.NewMemoryDataStreamingConfigFromCsv(
+		"test_file.csv",
+		0,
+		[]int{1, 2, 3},
+		true,
 	)
+	streamingConfigs = append(streamingConfigs, streamingConfig)
 	objectives := make([]learning.LogLikelihood, 0)
 	objectives = append(
 		objectives,

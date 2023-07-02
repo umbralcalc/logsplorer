@@ -1,6 +1,8 @@
 other_params:
 - float_params:
-    exponential_weighting_timescale: [1.0]
+    times: []
+    flattened_means_in_time: []
+    upper_triangle_covariance_matrix: []
   int_params: {}
 init_state_values:
 - [0.0, 0.0, 0.0]

@@ -38,6 +38,10 @@ func (g *GaussianProcessConditionalProbability) SetParams(
 	timeIndex := 0
 	stateIndex := 0
 	for _, mean := range params.FloatParams["flattened_means_in_time"] {
+		_, ok := g.meansInTime[g.times[timeIndex]]
+		if !ok {
+			g.meansInTime[g.times[timeIndex]] = make([]float64, g.stateWidth)
+		}
 		g.meansInTime[g.times[timeIndex]][stateIndex] = mean
 		stateIndex += 1
 		if stateIndex == g.stateWidth {
@@ -54,8 +58,8 @@ func (g *GaussianProcessConditionalProbability) Evaluate(
 	currentTime float64,
 	pastTime float64,
 ) float64 {
-	var currentDiff []float64
-	var pastDiff []float64
+	currentDiff := make([]float64, g.stateWidth)
+	pastDiff := make([]float64, g.stateWidth)
 	currentStateDiffVector := mat.NewVecDense(
 		g.stateWidth,
 		floats.SubTo(currentDiff, currentState, g.meansInTime[currentTime]),
@@ -80,4 +84,21 @@ func (g *GaussianProcessConditionalProbability) Evaluate(
 	logResult -= 0.5 * float64(g.stateWidth) * logTwoPi
 	logResult -= 0.5 * choleskyDecomp.LogDet()
 	return math.Exp(logResult)
+}
+
+// NewGaussianProcessConditionalProbability creates a new
+// GaussianProcessConditionalProbability given a slice of times
+// to make predictions for and the width of a single state (the length
+// of the state vector).
+func NewGaussianProcessConditionalProbability(
+	kernel GaussianProcessCovarianceKernel,
+	times []float64,
+	stateWidth int,
+) *GaussianProcessConditionalProbability {
+	return &GaussianProcessConditionalProbability{
+		Kernel:      kernel,
+		times:       times,
+		meansInTime: make(map[float64][]float64),
+		stateWidth:  stateWidth,
+	}
 }
