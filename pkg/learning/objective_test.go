@@ -81,7 +81,6 @@ func TestLearningObjective(t *testing.T) {
 			config := newLearningConfigForTests(settings)
 			learningObjective := NewLearningObjective(config, settings)
 			_ = learningObjective.Evaluate(settings.OtherParams)
-			learningObjective.ResetIterators()
 		},
 	)
 }

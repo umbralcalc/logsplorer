@@ -26,22 +26,32 @@ func (n *NormalDataLinkingLogLikelihood) Evaluate(
 	statistics Statistics,
 	data []float64,
 ) float64 {
-	dist, _ := distmv.NewNormal(
+	dist, ok := distmv.NewNormal(
 		statistics.GetMean().RawVector().Data,
 		statistics.GetCovariance(),
 		n.Src,
 	)
+	if !ok {
+		return math.NaN()
+	}
 	return dist.LogProb(data)
 }
 
 func (n *NormalDataLinkingLogLikelihood) GenerateNewSamples(
 	statistics Statistics,
 ) []float64 {
-	dist, _ := distmv.NewNormal(
+	dist, ok := distmv.NewNormal(
 		statistics.GetMean().RawVector().Data,
 		statistics.GetCovariance(),
 		n.Src,
 	)
+	if !ok {
+		values := make([]float64, 0)
+		for i := 0; i < statistics.GetMean().Len(); i++ {
+			values = append(values, math.NaN())
+		}
+		return values
+	}
 	return dist.Rand(nil)
 }
 

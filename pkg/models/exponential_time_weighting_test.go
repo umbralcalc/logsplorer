@@ -57,7 +57,6 @@ func TestExponentialTimeWeighting(t *testing.T) {
 			)
 			learningObjective := learning.NewLearningObjective(config, settings)
 			_ = learningObjective.Evaluate(settings.OtherParams)
-			learningObjective.ResetIterators()
 		},
 	)
 }
