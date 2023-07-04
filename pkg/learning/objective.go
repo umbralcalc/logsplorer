@@ -12,7 +12,7 @@ import (
 type LearningObjective struct {
 	config          *LearningConfig
 	stochadexConfig *simulator.StochadexConfig
-	dataIterations  []*DataIterator
+	dataIterators   []*DataIterator
 }
 
 func (l *LearningObjective) Evaluate(
@@ -36,8 +36,8 @@ func (l *LearningObjective) Evaluate(
 
 	// store the objective value found in this step
 	objective := 0.0
-	for _, iteration := range l.dataIterations {
-		objective += iteration.GetObjective()
+	for _, iterator := range l.dataIterators {
+		objective += iterator.GetObjective()
 	}
 
 	// reset the stateful data iterators to be used again
@@ -54,7 +54,7 @@ func (l *LearningObjective) ResetIterators() {
 			l.config.BurnInSteps,
 		)
 		l.stochadexConfig.Partitions[i].Iteration = dataIterator
-		l.dataIterations[i] = dataIterator
+		l.dataIterators[i] = dataIterator
 	}
 }
 
@@ -66,7 +66,7 @@ func NewLearningObjective(
 ) *LearningObjective {
 	// handle some initial typing nonsense
 	iterations := make([]simulator.Iteration, 0)
-	dataIterations := make([]*DataIterator, 0)
+	dataIterators := make([]*DataIterator, 0)
 	for i, objective := range config.Objectives {
 		dataIterator := NewDataIterator(
 			objective,
@@ -74,7 +74,7 @@ func NewLearningObjective(
 			config.BurnInSteps,
 		)
 		iterations = append(iterations, dataIterator)
-		dataIterations = append(dataIterations, dataIterator)
+		dataIterators = append(dataIterators, dataIterator)
 	}
 	implementations := &simulator.LoadImplementationsConfig{
 		Iterations:           iterations,
@@ -90,6 +90,6 @@ func NewLearningObjective(
 	return &LearningObjective{
 		config:          config,
 		stochadexConfig: stochadexConfig,
-		dataIterations:  dataIterations,
+		dataIterators:   dataIterators,
 	}
 }
