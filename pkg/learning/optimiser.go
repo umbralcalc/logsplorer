@@ -76,5 +76,5 @@ func (g *GonumOptimisationAlgorithm) Run(
 	if err = result.Status.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return initialParams
+	return g.Translator.FromOptimiser(result.X, initialParams)
 }
