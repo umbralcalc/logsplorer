@@ -31,6 +31,17 @@ type ParamsTranslator interface {
 	) []*simulator.OtherParams
 }
 
+// NewParamsCopy is a convenience function which copies the input
+// []*simulator.OtherParams to help ensure thread safety.
+func NewParamsCopy(params []*simulator.OtherParams) []*simulator.OtherParams {
+	paramsCopy := make([]*simulator.OtherParams, 0)
+	for i := range params {
+		p := *params[i]
+		paramsCopy = append(paramsCopy, &p)
+	}
+	return paramsCopy
+}
+
 // GonumOptimisationAlgorithm allows any of the gonum optimisers to be
 // used in the learnadex.
 type GonumOptimisationAlgorithm struct {
@@ -46,13 +57,8 @@ func (g *GonumOptimisationAlgorithm) Run(
 		Func: func(x []float64) float64 {
 			// this copying ensures thread safety (as required by
 			// the gonum optimize package)
-			learningObjCopy := *learningObj
-			learningObjCopy.ResetIterators()
-			paramsCopy := make([]*simulator.OtherParams, 0)
-			for i := range initialParams {
-				params := *initialParams[i]
-				paramsCopy = append(paramsCopy, &params)
-			}
+			learningObjCopy := NewLearningObjectiveCopy(learningObj)
+			paramsCopy := NewParamsCopy(initialParams)
 			return learningObjCopy.Evaluate(
 				g.Translator.FromOptimiser(x, paramsCopy),
 			)

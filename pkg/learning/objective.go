@@ -93,3 +93,11 @@ func NewLearningObjective(
 		dataIterators:   dataIterators,
 	}
 }
+
+// NewLearningObjectiveCopy creates a new LearningObjective struct which copies
+// the input LearningObjective struct.
+func NewLearningObjectiveCopy(learningObj *LearningObjective) *LearningObjective {
+	learningObjCopy := *learningObj
+	learningObjCopy.ResetIterators()
+	return &learningObjCopy
+}
