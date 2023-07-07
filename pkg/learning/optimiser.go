@@ -57,7 +57,8 @@ func (g *GonumOptimisationAlgorithm) Run(
 		Func: func(x []float64) float64 {
 			// this copying ensures thread safety (as required by
 			// the gonum optimize package)
-			learningObjCopy := NewLearningObjectiveCopy(learningObj)
+			learningObjCopy := *learningObj
+			learningObjCopy.ResetIterators()
 			paramsCopy := NewParamsCopy(initialParams)
 			return learningObjCopy.Evaluate(
 				g.Translator.FromOptimiser(x, paramsCopy),
