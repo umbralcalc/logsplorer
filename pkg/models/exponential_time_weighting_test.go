@@ -34,7 +34,7 @@ func newSimpleLearningConfigForTests(
 			DataLink: &filter.NormalDataLinkingLogLikelihood{
 				Src: rand.NewSource(settings.Seeds[0]),
 			},
-			Statistics: &filter.StandardCovarianceStatistics{},
+			Statistics: &filter.Statistics{},
 		},
 	)
 	return &learning.LearningConfig{

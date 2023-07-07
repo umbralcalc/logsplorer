@@ -53,7 +53,7 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 			DataLink: &filter.NormalDataLinkingLogLikelihood{
 				Src: rand.NewSource(settings.Seeds[0]),
 			},
-			Statistics: &filter.StandardCovarianceStatistics{},
+			Statistics: &filter.Statistics{},
 		},
 	)
 	objectives = append(
@@ -63,7 +63,7 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 			DataLink: &filter.NormalDataLinkingLogLikelihood{
 				Src: rand.NewSource(settings.Seeds[1]),
 			},
-			Statistics: &filter.StandardCovarianceStatistics{},
+			Statistics: &filter.Statistics{},
 		},
 	)
 	return &LearningConfig{
