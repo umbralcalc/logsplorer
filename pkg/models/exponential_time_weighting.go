@@ -12,6 +12,12 @@ type ExponentialTimeWeightingConditionalProbability struct {
 	timescale float64
 }
 
+func (e *ExponentialTimeWeightingConditionalProbability) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+}
+
 func (e *ExponentialTimeWeightingConditionalProbability) SetParams(
 	params *simulator.OtherParams,
 ) {

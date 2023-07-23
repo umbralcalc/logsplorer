@@ -5,12 +5,18 @@ import (
 
 	"github.com/umbralcalc/learnadex/pkg/filter"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
-	"golang.org/x/exp/rand"
 )
 
 // dummyConditionalProbability is just used for testing.
 type dummyConditionalProbability struct {
 	value float64
+}
+
+func (d *dummyConditionalProbability) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	d.value = settings.OtherParams[partitionIndex].FloatParams["dummy_value"][0]
 }
 
 func (d *dummyConditionalProbability) SetParams(
@@ -45,26 +51,20 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	)
 	streamingConfigs = append(streamingConfigs, anotherStreamingConfig)
 	objectives := make([]LogLikelihood, 0)
-	objectives = append(
-		objectives,
-		&filter.ProbabilityFilterLogLikelihood{
-			Prob: &dummyConditionalProbability{},
-			DataLink: &filter.NormalDataLinkingLogLikelihood{
-				Src: rand.NewSource(settings.Seeds[0]),
-			},
-			Statistics: &filter.Statistics{},
-		},
-	)
-	objectives = append(
-		objectives,
-		&filter.ProbabilityFilterLogLikelihood{
-			Prob: &dummyConditionalProbability{},
-			DataLink: &filter.NormalDataLinkingLogLikelihood{
-				Src: rand.NewSource(settings.Seeds[1]),
-			},
-			Statistics: &filter.Statistics{},
-		},
-	)
+	firstObjective := &filter.ProbabilityFilterLogLikelihood{
+		Prob:       &dummyConditionalProbability{},
+		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
+		Statistics: &filter.Statistics{},
+	}
+	firstObjective.Configure(0, settings)
+	objectives = append(objectives, firstObjective)
+	secondObjective := &filter.ProbabilityFilterLogLikelihood{
+		Prob:       &dummyConditionalProbability{},
+		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
+		Statistics: &filter.Statistics{},
+	}
+	secondObjective.Configure(1, settings)
+	objectives = append(objectives, secondObjective)
 	return &LearningConfig{
 		Streaming:  streamingConfigs,
 		Objectives: objectives,

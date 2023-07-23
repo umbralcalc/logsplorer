@@ -11,6 +11,15 @@ type ConstantGaussianProcessCovarianceKernel struct {
 	stateWidth int
 }
 
+func (c *ConstantGaussianProcessCovarianceKernel) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	c.stateWidth = settings.StateWidths[partitionIndex]
+	c.covMatrix = mat.NewSymDense(c.stateWidth, nil)
+	c.SetParams(settings.OtherParams[partitionIndex])
+}
+
 func (c *ConstantGaussianProcessCovarianceKernel) SetParams(
 	params *simulator.OtherParams,
 ) {

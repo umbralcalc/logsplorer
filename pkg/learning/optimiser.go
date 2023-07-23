@@ -14,21 +14,81 @@ type OptimisationAlgorithm interface {
 	Run(
 		learningObj *LearningObjective,
 		initialParams []*simulator.OtherParams,
+		paramsToOptimise []*simulator.OtherParamsMask,
 	) []*simulator.OtherParams
 }
 
-// ParamsTranslator defines the interface that must be implemented in order
-// to translate the params which are passed to the probability filter
-// algorithm into a form which the optimiser OptimimisationAlgorithm can
-// always use. Writing this translator for a specific problem domain also
-// enables only translating a subset of all of the parameters if only
-// optimising a subset is desired.
-type ParamsTranslator interface {
-	ToOptimiser(paramsToTranslate []*simulator.OtherParams) []float64
-	FromOptimiser(
-		fromOptimiser []float64,
-		paramsToUpdate []*simulator.OtherParams,
-	) []*simulator.OtherParams
+// GetParamsForOptimiser is a convenience function which returns the params
+// from the stochadex where the mask has been applied to them in a flattened
+// single slice format ready to input into an optimiser.
+func GetParamsForOptimiser(
+	params []*simulator.OtherParams,
+	paramsToOptimise []*simulator.OtherParamsMask,
+) []float64 {
+	paramsForOptimiser := make([]float64, 0)
+	for index, partitionParams := range params {
+		for name, paramSlice := range partitionParams.FloatParams {
+			_, ok := paramsToOptimise[index].FloatParams[name]
+			if !ok {
+				continue
+			}
+			for i, param := range paramSlice {
+				if paramsToOptimise[index].FloatParams[name][i] {
+					paramsForOptimiser = append(paramsForOptimiser, param)
+				}
+			}
+		}
+		for name, paramSlice := range partitionParams.IntParams {
+			_, ok := paramsToOptimise[index].IntParams[name]
+			if !ok {
+				continue
+			}
+			for i, param := range paramSlice {
+				if paramsToOptimise[index].IntParams[name][i] {
+					paramsForOptimiser = append(paramsForOptimiser, float64(param))
+				}
+			}
+		}
+	}
+	return paramsForOptimiser
+}
+
+// UpdateParamsFromOptimiser is a convenience function which updates the input params
+// from the stochadex which have been retrieved from the flattened slice format that
+// is typically used in an optimiser package.
+func UpdateParamsFromOptimiser(
+	fromOptimiser []float64,
+	params []*simulator.OtherParams,
+	paramsToOptimise []*simulator.OtherParamsMask,
+) []*simulator.OtherParams {
+	indexInOptimiser := 0
+	for index, partitionParams := range params {
+		for name, paramSlice := range partitionParams.FloatParams {
+			_, ok := paramsToOptimise[index].FloatParams[name]
+			if !ok {
+				continue
+			}
+			for i := range paramSlice {
+				if paramsToOptimise[index].FloatParams[name][i] {
+					params[index].FloatParams[name][i] = fromOptimiser[i]
+					indexInOptimiser += 1
+				}
+			}
+		}
+		for name, paramSlice := range partitionParams.IntParams {
+			_, ok := paramsToOptimise[index].IntParams[name]
+			if !ok {
+				continue
+			}
+			for i := range paramSlice {
+				if paramsToOptimise[index].IntParams[name][i] {
+					params[index].IntParams[name][i] = int64(fromOptimiser[i])
+					indexInOptimiser += 1
+				}
+			}
+		}
+	}
+	return params
 }
 
 // NewParamsCopy is a convenience function which copies the input
@@ -45,13 +105,13 @@ func NewParamsCopy(params []*simulator.OtherParams) []*simulator.OtherParams {
 // GonumOptimisationAlgorithm allows any of the gonum optimisers to be
 // used in the learnadex.
 type GonumOptimisationAlgorithm struct {
-	Method     optimize.Method
-	Translator ParamsTranslator
+	Method optimize.Method
 }
 
 func (g *GonumOptimisationAlgorithm) Run(
 	learningObj *LearningObjective,
 	initialParams []*simulator.OtherParams,
+	paramsToOptimise []*simulator.OtherParamsMask,
 ) []*simulator.OtherParams {
 	problem := optimize.Problem{
 		Func: func(x []float64) float64 {
@@ -61,13 +121,13 @@ func (g *GonumOptimisationAlgorithm) Run(
 			learningObjCopy.ResetIterators()
 			paramsCopy := NewParamsCopy(initialParams)
 			return learningObjCopy.Evaluate(
-				g.Translator.FromOptimiser(x, paramsCopy),
+				UpdateParamsFromOptimiser(x, paramsCopy, paramsToOptimise),
 			)
 		},
 	}
 	result, err := optimize.Minimize(
 		problem,
-		g.Translator.ToOptimiser(initialParams),
+		GetParamsForOptimiser(initialParams, paramsToOptimise),
 		nil,
 		g.Method,
 	)
@@ -77,5 +137,5 @@ func (g *GonumOptimisationAlgorithm) Run(
 	if err = result.Status.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return g.Translator.FromOptimiser(result.X, initialParams)
+	return UpdateParamsFromOptimiser(result.X, initialParams, paramsToOptimise)
 }

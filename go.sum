@@ -16,10 +16,12 @@ github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZV
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/umbralcalc/stochadex v0.0.0-20230723063323-1ac80d7fbac1 h1:KfdsUXqlO55JZ2xTsP54dmEHXGvqL+ufLR1KeBKKER0=
 github.com/umbralcalc/stochadex v0.0.0-20230723063323-1ac80d7fbac1/go.mod h1:HjlNgQZlD+NISXicaj4My0JFY1ZOm5NsBKbxD5jd/3E=
+github.com/umbralcalc/stochadex v0.0.0-20230723102853-314064a8ca69 h1:vOwVB9n+3NbbkyiGC0dgHbe+CGGMeVM24azMQaEIDKY=
+github.com/umbralcalc/stochadex v0.0.0-20230723102853-314064a8ca69/go.mod h1:HjlNgQZlD+NISXicaj4My0JFY1ZOm5NsBKbxD5jd/3E=
 golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 h1:MGwJjxBy0HJshjDNfLsYO8xppfqWlA5ZT9OhtUUhTNw=
 golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
-golang.org/x/tools v0.10.1-0.20230622221742-0622ad2359a7 h1:5PWemM67wMSPpO0Y3lOPlyvgO3z56YkZRxPFcdd300g=
-golang.org/x/tools v0.10.1-0.20230622221742-0622ad2359a7/go.mod h1:UJwyiVBsOA2uwvK/e5OY3GTpDUJriEd+/YlqAwLPmyM=
+golang.org/x/tools v0.11.0 h1:EMCa6U9S2LtZXLAMoWiR/R8dAQFRqbAitmbJ2UKhoi8=
+golang.org/x/tools v0.11.0/go.mod h1:anzJrxPjNtfgiYQYirP2CPGzGLxrH2u2QBhn6Bf3qY8=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.13.0 h1:a0T3bh+7fhRyqeNbiC3qVHYmkiQgit3wnNan/2c0HMM=
 gonum.org/v1/gonum v0.13.0/go.mod h1:/WPYRckkfWrhWefxyYTfrTtQR0KH4iyHNuzxqXAKyAU=

@@ -8,6 +8,7 @@ import (
 // create an objective function which is applied to the data in an iterative
 // fashion by the DataIterator class.
 type LogLikelihood interface {
+	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	Evaluate(
 		params *simulator.OtherParams,
 		partitionIndex int,
@@ -33,6 +34,7 @@ func (d *DataIterator) Configure(
 	partitionIndex int,
 	settings *simulator.LoadSettingsConfig,
 ) {
+	d.logLikelihood.Configure(partitionIndex, settings)
 	d.burnInSteps = int(
 		settings.OtherParams[partitionIndex].IntParams["burn_in_steps"][0],
 	)

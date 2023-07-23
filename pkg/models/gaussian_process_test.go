@@ -5,7 +5,6 @@ import (
 
 	"github.com/umbralcalc/learnadex/pkg/learning"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
-	"gonum.org/v1/gonum/mat"
 )
 
 func TestGaussianProcess(t *testing.T) {
@@ -41,18 +40,11 @@ func TestGaussianProcess(t *testing.T) {
 				currentRow += 1
 			}
 			settings.OtherParams[0].FloatParams["upper_triangle_covariance_matrix"] = triangleCov
-			config := newSimpleLearningConfigForTests(
-				configPath,
-				settings,
-				NewGaussianProcessConditionalProbability(
-					&ConstantGaussianProcessCovarianceKernel{
-						covMatrix:  mat.NewSymDense(settings.StateWidths[0], nil),
-						stateWidth: settings.StateWidths[0],
-					},
-					settings.OtherParams[0].FloatParams["times"],
-					settings.StateWidths[0],
-				),
-			)
+			gaussianProc := &GaussianProcessConditionalProbability{
+				Kernel: &ConstantGaussianProcessCovarianceKernel{},
+			}
+			gaussianProc.Configure(0, settings)
+			config := newSimpleLearningConfigForTests(configPath, settings, gaussianProc)
 			learningObjective := learning.NewLearningObjective(config, settings)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},

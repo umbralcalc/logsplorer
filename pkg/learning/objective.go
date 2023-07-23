@@ -27,11 +27,9 @@ func (l *LearningObjective) Evaluate(
 	}
 
 	// instantiate a new batch of data iterators via the stochadex
-	stochadexConfig := simulator.NewStochadexConfig(
-		l.settings,
-		l.implementations,
+	coordinator := simulator.NewPartitionCoordinator(
+		simulator.NewStochadexConfig(l.settings, l.implementations),
 	)
-	coordinator := simulator.NewPartitionCoordinator(stochadexConfig)
 
 	// run the iterations over the data and terminate the for loop
 	// when the end of data condition has been met

@@ -19,9 +19,8 @@ type LearningConfig struct {
 
 // OptimiserConfig
 type OptimiserConfig struct {
-	Algorithm     OptimisationAlgorithm
-	Translator    ParamsTranslator
-	InitialParams *simulator.OtherParams
+	Algorithm        OptimisationAlgorithm
+	ParamsToOptimise []*simulator.OtherParamsMask
 }
 
 // LearnadexConfig

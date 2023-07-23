@@ -14,6 +14,7 @@ const logTwoPi = 1.83788
 // in order to create a covariance kernel that can be used in the
 // GaussianProcessConditionalProbability.
 type GaussianProcessCovarianceKernel interface {
+	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	SetParams(params *simulator.OtherParams)
 	GetCovariance(
 		currentState []float64,
@@ -30,6 +31,17 @@ type GaussianProcessConditionalProbability struct {
 	meansInTime map[float64][]float64
 	times       []float64
 	stateWidth  int
+}
+
+func (g *GaussianProcessConditionalProbability) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	g.Kernel.Configure(partitionIndex, settings)
+	g.stateWidth = settings.StateWidths[partitionIndex]
+	g.times = settings.OtherParams[partitionIndex].FloatParams["times"]
+	g.meansInTime = make(map[float64][]float64)
+	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
 func (g *GaussianProcessConditionalProbability) SetParams(
@@ -84,21 +96,4 @@ func (g *GaussianProcessConditionalProbability) Evaluate(
 	logResult -= 0.5 * float64(g.stateWidth) * logTwoPi
 	logResult -= 0.5 * choleskyDecomp.LogDet()
 	return math.Exp(logResult)
-}
-
-// NewGaussianProcessConditionalProbability creates a new
-// GaussianProcessConditionalProbability given a slice of times
-// to make predictions for and the width of a single state (the length
-// of the state vector).
-func NewGaussianProcessConditionalProbability(
-	kernel GaussianProcessCovarianceKernel,
-	times []float64,
-	stateWidth int,
-) *GaussianProcessConditionalProbability {
-	return &GaussianProcessConditionalProbability{
-		Kernel:      kernel,
-		times:       times,
-		meansInTime: make(map[float64][]float64),
-		stateWidth:  stateWidth,
-	}
 }

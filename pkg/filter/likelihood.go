@@ -7,6 +7,7 @@ import (
 // ConditionalProbability is the interface that must be implemented in order
 // to provide a conditionaly probability for the filtering algorithm.
 type ConditionalProbability interface {
+	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	SetParams(params *simulator.OtherParams)
 	Evaluate(
 		currentState []float64,
@@ -38,6 +39,14 @@ type ProbabilityFilterLogLikelihood struct {
 	Prob       ConditionalProbability
 	DataLink   DataLinkingLogLikelihood
 	Statistics *Statistics
+}
+
+func (p *ProbabilityFilterLogLikelihood) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	p.Prob.Configure(partitionIndex, settings)
+	p.DataLink.Configure(partitionIndex, settings)
 }
 
 func (p *ProbabilityFilterLogLikelihood) Evaluate(

@@ -14,5 +14,6 @@ func RunFilterParamsLearning(
 	return config.Optimiser.Algorithm.Run(
 		NewLearningObjective(config.Learning, settings),
 		settings.OtherParams,
+		config.Optimiser.ParamsToOptimise,
 	)
 }

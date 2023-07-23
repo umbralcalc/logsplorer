@@ -3,6 +3,7 @@ package filter
 import (
 	"math"
 
+	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distmv"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -12,6 +13,7 @@ import (
 // order to create a likelihood that connects derived statistics from the
 // probability filter to observed actual data values.
 type DataLinkingLogLikelihood interface {
+	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	Evaluate(statistics *Statistics, data []float64) float64
 	GenerateNewSamples(statistics *Statistics) []float64
 }
@@ -20,6 +22,13 @@ type DataLinkingLogLikelihood interface {
 // by a normal distribution, given the statistics provided by the filter.
 type NormalDataLinkingLogLikelihood struct {
 	Src rand.Source
+}
+
+func (n *NormalDataLinkingLogLikelihood) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	n.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }
 
 func (n *NormalDataLinkingLogLikelihood) Evaluate(
@@ -61,6 +70,13 @@ type GammaDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
 
+func (g *GammaDataLinkingLogLikelihood) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	g.Src = rand.NewSource(settings.Seeds[partitionIndex])
+}
+
 func (g *GammaDataLinkingLogLikelihood) Evaluate(
 	statistics *Statistics,
 	data []float64,
@@ -98,6 +114,13 @@ type PoissonDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
 
+func (p *PoissonDataLinkingLogLikelihood) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	p.Src = rand.NewSource(settings.Seeds[partitionIndex])
+}
+
 func (p *PoissonDataLinkingLogLikelihood) Evaluate(
 	statistics *Statistics,
 	data []float64,
@@ -130,6 +153,13 @@ func (p *PoissonDataLinkingLogLikelihood) GenerateNewSamples(
 // provided by the filter.
 type NegativeBinomialDataLinkingLogLikelihood struct {
 	Src rand.Source
+}
+
+func (n *NegativeBinomialDataLinkingLogLikelihood) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	n.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }
 
 func (n *NegativeBinomialDataLinkingLogLikelihood) Evaluate(
