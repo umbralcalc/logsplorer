@@ -29,7 +29,6 @@ func (d *dummyConditionalProbability) Evaluate(
 }
 
 func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
-	extraSettings := NewExtraLoadSettingsConfigFromYaml("test_config.yaml")
 	streamingConfigs := make([]*DataStreamingConfig, 0)
 	streamingConfig, _ := NewMemoryDataStreamingConfigFromCsv(
 		"test_file.csv",
@@ -67,9 +66,8 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 		},
 	)
 	return &LearningConfig{
-		BurnInSteps: extraSettings.BurnInSteps,
-		Streaming:   streamingConfigs,
-		Objectives:  objectives,
+		Streaming:  streamingConfigs,
+		Objectives: objectives,
 	}
 }
 

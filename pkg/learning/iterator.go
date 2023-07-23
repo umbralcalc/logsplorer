@@ -29,6 +29,17 @@ type DataIterator struct {
 	stepsTaken              int
 }
 
+func (d *DataIterator) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+	d.burnInSteps = int(
+		settings.OtherParams[partitionIndex].IntParams["burn_in_steps"][0],
+	)
+	d.cumulativeLogLikelihood = 0.0
+	d.stepsTaken = 0
+}
+
 func (d *DataIterator) Iterate(
 	params *simulator.OtherParams,
 	partitionIndex int,
@@ -52,19 +63,4 @@ func (d *DataIterator) Iterate(
 // through the data and applying the LogLikehood.Evaluate method.
 func (d *DataIterator) GetObjective() float64 {
 	return d.cumulativeLogLikelihood
-}
-
-// NewDataIterator creates a new DataIterator.
-func NewDataIterator(
-	logLikelihood LogLikelihood,
-	streamer DataStreamer,
-	burnInSteps int,
-) *DataIterator {
-	return &DataIterator{
-		logLikelihood:           logLikelihood,
-		streamer:                streamer,
-		cumulativeLogLikelihood: 0.0,
-		burnInSteps:             burnInSteps,
-		stepsTaken:              0,
-	}
 }

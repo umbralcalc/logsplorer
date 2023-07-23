@@ -17,7 +17,6 @@ func newSimpleLearningConfigForTests(
 	settings *simulator.LoadSettingsConfig,
 	conditionalProb filter.ConditionalProbability,
 ) *learning.LearningConfig {
-	extraSettings := learning.NewExtraLoadSettingsConfigFromYaml(extraSettingsConfigPath)
 	streamingConfigs := make([]*learning.DataStreamingConfig, 0)
 	streamingConfig, _ := learning.NewMemoryDataStreamingConfigFromCsv(
 		"test_file.csv",
@@ -38,9 +37,8 @@ func newSimpleLearningConfigForTests(
 		},
 	)
 	return &learning.LearningConfig{
-		BurnInSteps: extraSettings.BurnInSteps,
-		Streaming:   streamingConfigs,
-		Objectives:  objectives,
+		Streaming:  streamingConfigs,
+		Objectives: objectives,
 	}
 }
 

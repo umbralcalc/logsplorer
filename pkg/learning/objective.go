@@ -11,8 +11,9 @@ import (
 // cumulative log-likelihood.
 type LearningObjective struct {
 	config          *LearningConfig
-	stochadexConfig *simulator.StochadexConfig
 	dataIterators   []*DataIterator
+	settings        *simulator.LoadSettingsConfig
+	implementations *simulator.LoadImplementationsConfig
 }
 
 func (l *LearningObjective) Evaluate(
@@ -21,12 +22,16 @@ func (l *LearningObjective) Evaluate(
 	var wg sync.WaitGroup
 
 	// set the incoming new params for each state partition
-	for index := range l.stochadexConfig.Partitions {
-		l.stochadexConfig.Partitions[index].Params.Other = newParams[index]
+	for index := range l.settings.OtherParams {
+		l.settings.OtherParams[index] = newParams[index]
 	}
 
 	// instantiate a new batch of data iterators via the stochadex
-	coordinator := simulator.NewPartitionCoordinator(l.stochadexConfig)
+	stochadexConfig := simulator.NewStochadexConfig(
+		l.settings,
+		l.implementations,
+	)
+	coordinator := simulator.NewPartitionCoordinator(stochadexConfig)
 
 	// run the iterations over the data and terminate the for loop
 	// when the end of data condition has been met
@@ -48,12 +53,12 @@ func (l *LearningObjective) Evaluate(
 
 func (l *LearningObjective) ResetIterators() {
 	for i, objective := range l.config.Objectives {
-		dataIterator := NewDataIterator(
-			objective,
-			l.config.Streaming[i].DataStreamer,
-			l.config.BurnInSteps,
-		)
-		l.stochadexConfig.Partitions[i].Iteration = dataIterator
+		dataIterator := &DataIterator{
+			logLikelihood: objective,
+			streamer:      l.config.Streaming[i].DataStreamer,
+		}
+		dataIterator.Configure(i, l.settings)
+		l.implementations.Iterations[i] = dataIterator
 		l.dataIterators[i] = dataIterator
 	}
 }
@@ -64,15 +69,14 @@ func NewLearningObjective(
 	config *LearningConfig,
 	settings *simulator.LoadSettingsConfig,
 ) *LearningObjective {
-	// handle some initial typing nonsense
 	iterations := make([]simulator.Iteration, 0)
 	dataIterators := make([]*DataIterator, 0)
 	for i, objective := range config.Objectives {
-		dataIterator := NewDataIterator(
-			objective,
-			config.Streaming[i].DataStreamer,
-			config.BurnInSteps,
-		)
+		dataIterator := &DataIterator{
+			logLikelihood: objective,
+			streamer:      config.Streaming[i].DataStreamer,
+		}
+		dataIterator.Configure(i, settings)
 		iterations = append(iterations, dataIterator)
 		dataIterators = append(dataIterators, dataIterator)
 	}
@@ -83,13 +87,10 @@ func NewLearningObjective(
 		TerminationCondition: config.Streaming[0].TerminationCondition,
 		TimestepFunction:     config.Streaming[0].TimestepFunction,
 	}
-	stochadexConfig := simulator.NewStochadexConfig(
-		settings,
-		implementations,
-	)
 	return &LearningObjective{
 		config:          config,
-		stochadexConfig: stochadexConfig,
 		dataIterators:   dataIterators,
+		settings:        settings,
+		implementations: implementations,
 	}
 }
