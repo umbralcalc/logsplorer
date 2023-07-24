@@ -36,14 +36,14 @@ func (d *dummyConditionalProbability) Evaluate(
 
 func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
 	streamingConfigs := make([]*DataStreamingConfig, 0)
-	streamingConfig, _ := NewMemoryDataStreamingConfigFromCsv(
+	streamingConfig := NewMemoryDataStreamingConfigFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},
 		true,
 	)
 	streamingConfigs = append(streamingConfigs, streamingConfig)
-	anotherStreamingConfig, _ := NewMemoryDataStreamingConfigFromCsv(
+	anotherStreamingConfig := NewMemoryDataStreamingConfigFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},

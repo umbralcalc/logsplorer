@@ -1,0 +1,4 @@
+data_streamers:
+objectives:
+- "&learning.ProbabilityFilterLogLikelihood{Prob: &learning., DataLink   DataLinkingLogLikelihood}"
+optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{Method: &optimize.NelderMead{}}"

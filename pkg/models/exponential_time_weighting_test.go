@@ -18,7 +18,7 @@ func newSimpleLearningConfigForTests(
 	conditionalProb filter.ConditionalProbability,
 ) *learning.LearningConfig {
 	streamingConfigs := make([]*learning.DataStreamingConfig, 0)
-	streamingConfig, _ := learning.NewMemoryDataStreamingConfigFromCsv(
+	streamingConfig := learning.NewMemoryDataStreamingConfigFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},

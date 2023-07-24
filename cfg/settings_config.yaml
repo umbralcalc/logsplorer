@@ -4,6 +4,11 @@ other_params:
     upper_triangle_covariance_matrix: [10.0, 0.0, 0.0, 10.0, 0.0, 10.0]
   int_params:
     burn_in_steps: [5]
+params_to_optimise:
+- float_params:
+    initial_means: [true, true, true]
+    upper_triangle_covariance_matrix: [true, false, false, true, false, true]
+  int_params: {}
 init_state_values:
 - [0.0, 0.0, 0.0]
 seeds: [22113355]

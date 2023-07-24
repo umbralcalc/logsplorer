@@ -27,10 +27,10 @@ type GaussianProcessCovarianceKernel interface {
 // GaussianProcessConditionalProbability can be used in the probability
 // filter to learn a Gaussian process kernel with a vector of means.
 type GaussianProcessConditionalProbability struct {
-	Kernel      GaussianProcessCovarianceKernel
-	meansInTime map[float64][]float64
-	times       []float64
-	stateWidth  int
+	Kernel       GaussianProcessCovarianceKernel
+	meansInTime  map[float64][]float64
+	initialMeans []float64
+	stateWidth   int
 }
 
 func (g *GaussianProcessConditionalProbability) Configure(
@@ -38,29 +38,15 @@ func (g *GaussianProcessConditionalProbability) Configure(
 	settings *simulator.LoadSettingsConfig,
 ) {
 	g.Kernel.Configure(partitionIndex, settings)
-	g.stateWidth = settings.StateWidths[partitionIndex]
-	g.times = settings.OtherParams[partitionIndex].FloatParams["times"]
 	g.meansInTime = make(map[float64][]float64)
+	g.initialMeans = settings.OtherParams[partitionIndex].FloatParams["initial_means"]
+	g.stateWidth = settings.StateWidths[partitionIndex]
 	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
 func (g *GaussianProcessConditionalProbability) SetParams(
 	params *simulator.OtherParams,
 ) {
-	timeIndex := 0
-	stateIndex := 0
-	for _, mean := range params.FloatParams["flattened_means_in_time"] {
-		_, ok := g.meansInTime[g.times[timeIndex]]
-		if !ok {
-			g.meansInTime[g.times[timeIndex]] = make([]float64, g.stateWidth)
-		}
-		g.meansInTime[g.times[timeIndex]][stateIndex] = mean
-		stateIndex += 1
-		if stateIndex == g.stateWidth {
-			timeIndex += 1
-			stateIndex = 0
-		}
-	}
 	g.Kernel.SetParams(params)
 }
 
@@ -70,6 +56,14 @@ func (g *GaussianProcessConditionalProbability) Evaluate(
 	currentTime float64,
 	pastTime float64,
 ) float64 {
+	_, ok := g.meansInTime[pastTime]
+	if !ok {
+		g.meansInTime[pastTime] = g.initialMeans
+	}
+	_, ok = g.meansInTime[currentTime]
+	if !ok {
+		g.meansInTime[currentTime] = g.initialMeans
+	}
 	currentDiff := make([]float64, g.stateWidth)
 	pastDiff := make([]float64, g.stateWidth)
 	currentStateDiffVector := mat.NewVecDense(
@@ -81,7 +75,7 @@ func (g *GaussianProcessConditionalProbability) Evaluate(
 		floats.SubTo(pastDiff, pastState, g.meansInTime[pastTime]),
 	)
 	var choleskyDecomp mat.Cholesky
-	ok := choleskyDecomp.Factorize(
+	ok = choleskyDecomp.Factorize(
 		g.Kernel.GetCovariance(currentState, pastState, currentTime, pastTime),
 	)
 	if !ok {

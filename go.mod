@@ -3,7 +3,8 @@ module github.com/umbralcalc/learnadex
 go 1.18
 
 require (
-	github.com/umbralcalc/stochadex v0.0.0-20230723102853-314064a8ca69
+	github.com/akamensky/argparse v1.4.0
+	github.com/umbralcalc/stochadex v0.0.0-20230724053150-de7c30320c74
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
 	gonum.org/v1/gonum v0.13.0
 )
