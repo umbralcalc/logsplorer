@@ -6,7 +6,6 @@ import (
 	"github.com/umbralcalc/learnadex/pkg/filter"
 	"github.com/umbralcalc/learnadex/pkg/learning"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
-	"golang.org/x/exp/rand"
 )
 
 // newSimpleLearningConfigForTests creates a learning config with a single
@@ -26,16 +25,12 @@ func newSimpleLearningConfigForTests(
 	)
 	streamingConfigs = append(streamingConfigs, streamingConfig)
 	objectives := make([]learning.LogLikelihood, 0)
-	objectives = append(
-		objectives,
-		&filter.ProbabilityFilterLogLikelihood{
-			Prob: conditionalProb,
-			DataLink: &filter.NormalDataLinkingLogLikelihood{
-				Src: rand.NewSource(settings.Seeds[0]),
-			},
-			Statistics: &filter.Statistics{},
-		},
-	)
+	logLike := &filter.ProbabilityFilterLogLikelihood{
+		Prob:       conditionalProb,
+		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
+		Statistics: &filter.Statistics{},
+	}
+	objectives = append(objectives, logLike)
 	return &learning.LearningConfig{
 		Streaming:  streamingConfigs,
 		Objectives: objectives,

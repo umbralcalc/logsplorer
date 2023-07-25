@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -76,9 +77,21 @@ func writeMainProgram() {
 	codeTemplate := template.New("learnadexMain")
 	template.Must(codeTemplate.Parse(`package main
 
+import (
+	"fmt"
+	"io/ioutil"
+
+	"github.com/umbralcalc/learnadex/pkg/filter"
+	"github.com/umbralcalc/learnadex/pkg/learning"
+	"github.com/umbralcalc/learnadex/pkg/models"
+	"github.com/umbralcalc/stochadex/pkg/simulator"
+	"gonum.org/v1/gonum/optimize"
+	"gopkg.in/yaml.v2"
+)
+
 func main() {
-	settings := simulator.NewLoadSettingsConfigFromYaml({{.SettingsFile}})
-	yamlFile, err = ioutil.ReadFile({{.SettingsFile}})
+	settings := simulator.NewLoadSettingsConfigFromYaml("{{.SettingsFile}}")
+	yamlFile, err := ioutil.ReadFile("{{.SettingsFile}}")
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +110,7 @@ func main() {
 			ParamsToOptimise: extraSettings.ParamsToOptimise,
 		},
 	}
-	learning.RunFilterParamsLearning(config, settings)
+	fmt.Println(learning.RunFilterParamsLearning(config, settings))
 }`))
 	file, err := os.Create("tmp/main.go")
 	if err != nil {
@@ -125,4 +138,12 @@ func main() {
 func main() {
 	// hydrate the template code and write it to tmp/main.go
 	writeMainProgram()
+
+	// execute the code
+	runCmd := exec.Command("go", "run", "tmp/main.go")
+	runCmd.Stdout = os.Stdout
+	runCmd.Stderr = os.Stderr
+	if err := runCmd.Run(); err != nil {
+		panic(err)
+	}
 }

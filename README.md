@@ -5,3 +5,16 @@ The 'learnadex' builds on the capabilities and framework provided by the [stocha
 ## Need more context and documentation?
 
 The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 2** of this very delightful book: [Diffusing Ideas](https://umbralcalc.github.io/diffusing-ideas/).
+
+## Building and running the binary
+
+```shell
+# update the go modules
+go mod tidy
+
+# build the binary
+go build -o bin/ ./cmd/learnadex
+
+# run your configs
+./bin/learnadex --settings ./cfg/settings_config.yaml \
+--implementations ./cfg/implementations_config.yaml
