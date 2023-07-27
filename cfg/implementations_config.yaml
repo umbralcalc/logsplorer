@@ -1,5 +1,11 @@
 data_streamers:
 - 'learning.NewMemoryDataStreamingConfigFromCsv("dat/test_file.csv", 0, []int{1, 2, 3}, true)'
 objectives:
-- "&filter.ProbabilityFilterLogLikelihood{Prob: &models.GaussianProcessConditionalProbability{Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, DataLink: &filter.NormalDataLinkingLogLikelihood{}, Statistics: &filter.Statistics{}}"
-optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{Method: &optimize.NelderMead{}}"
+- "&filter.ProbabilityFilterLogLikelihood{
+    Prob: &models.GaussianProcessConditionalProbability{
+    Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, 
+    DataLink: &filter.NormalDataLinkingLogLikelihood{}, 
+    Statistics: &filter.Statistics{}}"
+optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
+    Method: &optimize.NelderMead{},
+    Settings: &optimize.Settings{FuncEvaluations: 100, Concurrent: 10}}"

@@ -79,38 +79,33 @@ func writeMainProgram() {
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/umbralcalc/learnadex/pkg/filter"
 	"github.com/umbralcalc/learnadex/pkg/learning"
 	"github.com/umbralcalc/learnadex/pkg/models"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gonum.org/v1/gonum/optimize"
-	"gopkg.in/yaml.v2"
 )
 
 func main() {
 	settings := simulator.NewLoadSettingsConfigFromYaml("{{.SettingsFile}}")
-	yamlFile, err := ioutil.ReadFile("{{.SettingsFile}}")
-	if err != nil {
-		panic(err)
-	}
-	var extraSettings learning.ExtraLoadSettings
-	err = yaml.Unmarshal(yamlFile, &extraSettings)
-	if err != nil {
-		panic(err)
-	}
 	config := &learning.LearnadexConfig{
 		Learning: &learning.LearningConfig{
 			Streaming:  {{.StreamingConfigs}},
 			Objectives: {{.Objectives}},
 		},
-		Optimiser: &learning.OptimiserConfig{
-			Algorithm: {{.Algorithm}},
-			ParamsToOptimise: extraSettings.ParamsToOptimise,
-		},
+		Optimiser: {{.Algorithm}},
 	}
-	fmt.Println(learning.RunFilterParamsLearning(config, settings))
+	params := learning.RunFilterParamsLearning(config, settings)
+	for i, p := range params {
+		fmt.Println("partition ", i)
+		for k, v := range p.FloatParams {
+			fmt.Println(k, v)
+		}
+		for k, v := range p.IntParams {
+			fmt.Println(k, v)
+		}
+	}
 }`))
 	file, err := os.Create("tmp/main.go")
 	if err != nil {

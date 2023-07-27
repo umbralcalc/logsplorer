@@ -11,9 +11,8 @@ func RunFilterParamsLearning(
 	config *LearnadexConfig,
 	settings *simulator.LoadSettingsConfig,
 ) []*simulator.OtherParams {
-	return config.Optimiser.Algorithm.Run(
+	return config.Optimiser.Run(
 		NewLearningObjective(config.Learning, settings),
 		settings.OtherParams,
-		config.Optimiser.ParamsToOptimise,
 	)
 }

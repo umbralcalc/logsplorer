@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/akamensky/argparse v1.4.0
-	github.com/umbralcalc/stochadex v0.0.0-20230724053150-de7c30320c74
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
+	github.com/umbralcalc/stochadex v0.0.0-20230727055058-bd1f0abcd8ca
+	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090
 	gonum.org/v1/gonum v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
 )

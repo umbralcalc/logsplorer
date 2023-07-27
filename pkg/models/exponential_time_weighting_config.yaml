@@ -1,6 +1,8 @@
 other_params:
 - float_params:
     exponential_weighting_timescale: [1.0]
+  float_params_mask:
+    exponential_weighting_timescale: [true]
   int_params:
     burn_in_steps: [5]
 init_state_values:

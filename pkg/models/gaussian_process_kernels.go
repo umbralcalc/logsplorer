@@ -5,7 +5,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// ConstantGaussianProcessCovarianceKernel
+// ConstantGaussianProcessCovarianceKernel models a constant covariance applied
+// for all values in the GaussianProcessConditionalProbability.
 type ConstantGaussianProcessCovarianceKernel struct {
 	covMatrix  *mat.SymDense
 	stateWidth int
@@ -25,14 +26,23 @@ func (c *ConstantGaussianProcessCovarianceKernel) SetParams(
 ) {
 	row := 0
 	col := 0
-	for _, param := range params.FloatParams["upper_triangle_covariance_matrix"] {
-		c.covMatrix.SetSym(row, col, param)
+	upperTri := mat.NewTriDense(c.stateWidth, mat.Upper, nil)
+	for i, param := range params.FloatParams["upper_triangle_cholesky_of_cov_matrix"] {
+		// nonzero values along the diagonal are needed as a constraint
+		if col == row && param == 0.0 {
+			param = 1e8
+			params.FloatParams["upper_triangle_cholesky_of_cov_matrix"][i] = param
+		}
+		upperTri.SetTri(row, col, param)
 		col += 1
 		if col == c.stateWidth {
 			row += 1
 			col = row
 		}
 	}
+	var choleskyDecomp mat.Cholesky
+	choleskyDecomp.SetFromU(upperTri)
+	choleskyDecomp.ToSym(c.covMatrix)
 }
 
 func (c *ConstantGaussianProcessCovarianceKernel) GetCovariance(

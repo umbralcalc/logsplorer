@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/umbralcalc/stochadex/pkg/simulator"
@@ -41,13 +42,29 @@ func (g *GaussianProcessConditionalProbability) Configure(
 	g.meansInTime = make(map[float64][]float64)
 	g.initialMeans = settings.OtherParams[partitionIndex].FloatParams["initial_means"]
 	g.stateWidth = settings.StateWidths[partitionIndex]
+	affirmativeMask := make([]bool, 0)
+	for range g.initialMeans {
+		affirmativeMask = append(affirmativeMask, true)
+	}
+	for _, time := range settings.OtherParams[partitionIndex].FloatParams["times_to_fit"] {
+		_, ok := g.meansInTime[time]
+		if !ok {
+			g.meansInTime[time] = g.initialMeans
+		}
+		// populate new fields to make the initial inputs for the user much more manageable
+		settings.OtherParams[partitionIndex].
+			FloatParams[fmt.Sprintf("means_at_time_%f", time)] = g.meansInTime[time]
+		settings.OtherParams[partitionIndex].
+			FloatParamsMask[fmt.Sprintf("means_at_time_%f", time)] = affirmativeMask
+	}
 	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
-func (g *GaussianProcessConditionalProbability) SetParams(
-	params *simulator.OtherParams,
-) {
-	g.Kernel.SetParams(params)
+func (g *GaussianProcessConditionalProbability) SetParams(params *simulator.OtherParams) {
+	for _, time := range params.FloatParams["times_to_fit"] {
+		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%f", time)]
+		g.Kernel.SetParams(params)
+	}
 }
 
 func (g *GaussianProcessConditionalProbability) Evaluate(
