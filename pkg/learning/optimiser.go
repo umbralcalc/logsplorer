@@ -3,6 +3,7 @@ package learning
 import (
 	"log"
 
+	"github.com/mkmik/argsort"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gonum.org/v1/gonum/optimize"
 )
@@ -17,34 +18,65 @@ type OptimisationAlgorithm interface {
 	) []*simulator.OtherParams
 }
 
+// OptimiserParamsMapping
+type OptimiserParamsMapping struct {
+	Names            []string
+	ParamIndices     []int
+	PartitionIndices []int
+	OptimiserIndices []int
+}
+
+func (o *OptimiserParamsMapping) SortByOptimiserIndices() {
+	sortedIndices := argsort.SortSlice(
+		o.OptimiserIndices,
+		func(i, j int) bool {
+			return o.OptimiserIndices[i] < o.OptimiserIndices[j]
+		},
+	)
+	sortedNames := o.Names
+	sortedParamIndices := o.ParamIndices
+	sortedPartitionIndices := o.PartitionIndices
+	sortedOptimiserIndices := o.OptimiserIndices
+	for i, sortedIndex := range sortedIndices {
+		sortedNames[i] = o.Names[sortedIndex]
+		sortedParamIndices[i] = o.ParamIndices[sortedIndex]
+		sortedPartitionIndices[i] = o.PartitionIndices[sortedIndex]
+		sortedOptimiserIndices[i] = o.OptimiserIndices[sortedIndex]
+	}
+	o.Names = sortedNames
+	o.ParamIndices = sortedParamIndices
+	o.PartitionIndices = sortedPartitionIndices
+	o.OptimiserIndices = sortedOptimiserIndices
+}
+
+// OptimiserParamsMappings
+type OptimiserParamsMappings struct {
+	FloatParams *OptimiserParamsMapping
+	IntParams   *OptimiserParamsMapping
+}
+
 // GetParamsForOptimiser is a convenience function which returns the params
 // from the stochadex where the mask has been applied to them in a flattened
 // single slice format ready to input into an optimiser.
-func GetParamsForOptimiser(params []*simulator.OtherParams) []float64 {
+func (o *OptimiserParamsMappings) GetParamsForOptimiser(
+	params []*simulator.OtherParams,
+) []float64 {
 	paramsForOptimiser := make([]float64, 0)
-	for index, partitionParams := range params {
-		for name, paramSlice := range partitionParams.FloatParams {
-			_, ok := params[index].FloatParamsMask[name]
-			if !ok {
-				continue
-			}
-			for i, param := range paramSlice {
-				if params[index].FloatParamsMask[name][i] {
-					paramsForOptimiser = append(paramsForOptimiser, param)
-				}
-			}
-		}
-		for name, paramSlice := range partitionParams.IntParams {
-			_, ok := params[index].IntParamsMask[name]
-			if !ok {
-				continue
-			}
-			for i, param := range paramSlice {
-				if params[index].IntParamsMask[name][i] {
-					paramsForOptimiser = append(paramsForOptimiser, float64(param))
-				}
-			}
-		}
+	for i, name := range o.FloatParams.Names {
+		paramsForOptimiser = append(
+			paramsForOptimiser,
+			params[o.FloatParams.PartitionIndices[i]].
+				FloatParams[name][o.FloatParams.ParamIndices[i]],
+		)
+	}
+	for i, name := range o.IntParams.Names {
+		paramsForOptimiser = append(
+			paramsForOptimiser,
+			float64(
+				params[o.IntParams.PartitionIndices[i]].
+					IntParams[name][o.IntParams.ParamIndices[i]],
+			),
+		)
 	}
 	return paramsForOptimiser
 }
@@ -52,38 +84,101 @@ func GetParamsForOptimiser(params []*simulator.OtherParams) []float64 {
 // UpdateParamsFromOptimiser is a convenience function which updates the input params
 // from the stochadex which have been retrieved from the flattened slice format that
 // is typically used in an optimiser package.
-func UpdateParamsFromOptimiser(
+func (o *OptimiserParamsMappings) UpdateParamsFromOptimiser(
 	fromOptimiser []float64,
 	params []*simulator.OtherParams,
 ) []*simulator.OtherParams {
-	indexInOptimiser := 0
+	largestFloatParamIndex :=
+		o.FloatParams.OptimiserIndices[len(o.FloatParams.OptimiserIndices)-1]
+	for optimiserIndex, param := range fromOptimiser {
+		if optimiserIndex <= largestFloatParamIndex {
+			partition := o.FloatParams.PartitionIndices[optimiserIndex]
+			name := o.FloatParams.Names[optimiserIndex]
+			index := o.FloatParams.ParamIndices[optimiserIndex]
+			params[partition].FloatParams[name][index] = param
+		} else {
+			partition := o.IntParams.PartitionIndices[optimiserIndex]
+			name := o.IntParams.Names[optimiserIndex]
+			index := o.IntParams.ParamIndices[optimiserIndex]
+			params[partition].IntParams[name][index] = int64(param)
+		}
+	}
+	return params
+}
+
+// NewOptimiserParamsMappings
+func NewOptimiserParamsMappings(
+	params []*simulator.OtherParams,
+) *OptimiserParamsMappings {
+	optimiserParamsIndex := 0
+	floatParamsMapping := &OptimiserParamsMapping{
+		Names:            make([]string, 0),
+		PartitionIndices: make([]int, 0),
+		OptimiserIndices: make([]int, 0),
+	}
 	for index, partitionParams := range params {
 		for name, paramSlice := range partitionParams.FloatParams {
-			_, ok := params[index].FloatParamsMask[name]
+			_, ok := partitionParams.FloatParamsMask[name]
 			if !ok {
 				continue
 			}
 			for i := range paramSlice {
-				if params[index].FloatParamsMask[name][i] {
-					params[index].FloatParams[name][i] = fromOptimiser[i]
-					indexInOptimiser += 1
-				}
-			}
-		}
-		for name, paramSlice := range partitionParams.IntParams {
-			_, ok := params[index].IntParamsMask[name]
-			if !ok {
-				continue
-			}
-			for i := range paramSlice {
-				if params[index].IntParamsMask[name][i] {
-					params[index].IntParams[name][i] = int64(fromOptimiser[i])
-					indexInOptimiser += 1
+				if partitionParams.FloatParamsMask[name][i] {
+					floatParamsMapping.Names = append(floatParamsMapping.Names, name)
+					floatParamsMapping.ParamIndices = append(
+						floatParamsMapping.ParamIndices,
+						i,
+					)
+					floatParamsMapping.PartitionIndices = append(
+						floatParamsMapping.PartitionIndices,
+						index,
+					)
+					floatParamsMapping.OptimiserIndices = append(
+						floatParamsMapping.OptimiserIndices,
+						optimiserParamsIndex,
+					)
+					optimiserParamsIndex += 1
 				}
 			}
 		}
 	}
-	return params
+	intParamsMapping := &OptimiserParamsMapping{
+		Names:            make([]string, 0),
+		PartitionIndices: make([]int, 0),
+		OptimiserIndices: make([]int, 0),
+	}
+	for index, partitionParams := range params {
+		for name, paramSlice := range partitionParams.IntParams {
+			_, ok := partitionParams.IntParamsMask[name]
+			if !ok {
+				continue
+			}
+			for i := range paramSlice {
+				if partitionParams.IntParamsMask[name][i] {
+					intParamsMapping.Names = append(intParamsMapping.Names, name)
+					intParamsMapping.ParamIndices = append(
+						intParamsMapping.ParamIndices,
+						i,
+					)
+					intParamsMapping.PartitionIndices = append(
+						intParamsMapping.PartitionIndices,
+						index,
+					)
+					intParamsMapping.OptimiserIndices = append(
+						intParamsMapping.OptimiserIndices,
+						optimiserParamsIndex,
+					)
+					optimiserParamsIndex += 1
+				}
+			}
+		}
+	}
+	floatParamsMapping.SortByOptimiserIndices()
+	intParamsMapping.SortByOptimiserIndices()
+	return &OptimiserParamsMappings{
+		FloatParams: floatParamsMapping,
+		IntParams:   intParamsMapping,
+	}
 }
 
 // NewParamsCopy is a convenience function which copies the input
@@ -108,6 +203,7 @@ func (g *GonumOptimisationAlgorithm) Run(
 	learningObj *LearningObjective,
 	initialParams []*simulator.OtherParams,
 ) []*simulator.OtherParams {
+	mappings := NewOptimiserParamsMappings(initialParams)
 	problem := optimize.Problem{
 		Func: func(x []float64) float64 {
 			// this copying ensures thread safety (as required by
@@ -115,14 +211,14 @@ func (g *GonumOptimisationAlgorithm) Run(
 			learningObjCopy := *learningObj
 			learningObjCopy.ResetIterators()
 			paramsCopy := NewParamsCopy(initialParams)
-			return learningObjCopy.Evaluate(
-				UpdateParamsFromOptimiser(x, paramsCopy),
+			return -learningObjCopy.Evaluate(
+				mappings.UpdateParamsFromOptimiser(x, paramsCopy),
 			)
 		},
 	}
 	result, err := optimize.Minimize(
 		problem,
-		GetParamsForOptimiser(initialParams),
+		mappings.GetParamsForOptimiser(initialParams),
 		g.Settings,
 		g.Method,
 	)
@@ -132,5 +228,5 @@ func (g *GonumOptimisationAlgorithm) Run(
 	if err = result.Status.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return UpdateParamsFromOptimiser(result.X, initialParams)
+	return mappings.UpdateParamsFromOptimiser(result.X, initialParams)
 }

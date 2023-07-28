@@ -8,4 +8,4 @@ objectives:
     Statistics: &filter.Statistics{}}"
 optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
     Method: &optimize.NelderMead{},
-    Settings: &optimize.Settings{FuncEvaluations: 100, Concurrent: 10}}"
+    Settings: &optimize.Settings{Concurrent: 10}}"

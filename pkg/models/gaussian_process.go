@@ -5,8 +5,10 @@ import (
 	"math"
 
 	"github.com/umbralcalc/stochadex/pkg/simulator"
+	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 const logTwoPi = 1.83788
@@ -46,14 +48,24 @@ func (g *GaussianProcessConditionalProbability) Configure(
 	for range g.initialMeans {
 		affirmativeMask = append(affirmativeMask, true)
 	}
+	uniformDist := &distuv.Uniform{
+		Min: -1e-4,
+		Max: 1e-4,
+		Src: rand.NewSource(settings.Seeds[partitionIndex]),
+	}
 	for _, time := range settings.OtherParams[partitionIndex].FloatParams["times_to_fit"] {
 		_, ok := g.meansInTime[time]
 		if !ok {
 			g.meansInTime[time] = g.initialMeans
 		}
 		// populate new fields to make the initial inputs for the user much more manageable
+		initVals := make([]float64, 0)
+		for _, mean := range g.meansInTime[time] {
+			// add a little noise to each value at initialisation
+			initVals = append(initVals, mean+uniformDist.Rand())
+		}
 		settings.OtherParams[partitionIndex].
-			FloatParams[fmt.Sprintf("means_at_time_%f", time)] = g.meansInTime[time]
+			FloatParams[fmt.Sprintf("means_at_time_%f", time)] = initVals
 		settings.OtherParams[partitionIndex].
 			FloatParamsMask[fmt.Sprintf("means_at_time_%f", time)] = affirmativeMask
 	}
@@ -63,8 +75,8 @@ func (g *GaussianProcessConditionalProbability) Configure(
 func (g *GaussianProcessConditionalProbability) SetParams(params *simulator.OtherParams) {
 	for _, time := range params.FloatParams["times_to_fit"] {
 		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%f", time)]
-		g.Kernel.SetParams(params)
 	}
+	g.Kernel.SetParams(params)
 }
 
 func (g *GaussianProcessConditionalProbability) Evaluate(

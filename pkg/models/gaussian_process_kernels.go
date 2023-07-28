@@ -30,7 +30,7 @@ func (c *ConstantGaussianProcessCovarianceKernel) SetParams(
 	for i, param := range params.FloatParams["upper_triangle_cholesky_of_cov_matrix"] {
 		// nonzero values along the diagonal are needed as a constraint
 		if col == row && param == 0.0 {
-			param = 1e8
+			param = 1e-4
 			params.FloatParams["upper_triangle_cholesky_of_cov_matrix"][i] = param
 		}
 		upperTri.SetTri(row, col, param)

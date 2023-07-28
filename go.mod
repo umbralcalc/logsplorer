@@ -13,6 +13,7 @@ require (
 require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/mkmik/argsort v1.1.0
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
