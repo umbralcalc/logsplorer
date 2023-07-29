@@ -10,8 +10,8 @@ import (
 // by running the stochadex simulator as a data iterator and computing the
 // cumulative log-likelihood.
 type LearningObjective struct {
+	Iterations      []IterationWithObjective
 	config          *LearningConfig
-	dataIterators   []*DataIterator
 	settings        *simulator.LoadSettingsConfig
 	implementations *simulator.LoadImplementationsConfig
 }
@@ -39,8 +39,8 @@ func (l *LearningObjective) Evaluate(
 
 	// store the objective value found in this step
 	objective := 0.0
-	for _, iterator := range l.dataIterators {
-		objective += iterator.GetObjective()
+	for _, iteration := range l.Iterations {
+		objective += iteration.GetObjective()
 	}
 
 	// reset the stateful data iterators to be used again
@@ -50,14 +50,8 @@ func (l *LearningObjective) Evaluate(
 }
 
 func (l *LearningObjective) ResetIterators() {
-	for i, objective := range l.config.Objectives {
-		dataIterator := &DataIterator{
-			logLikelihood: objective,
-			streamer:      l.config.Streaming[i].DataStreamer,
-		}
-		dataIterator.Configure(i, l.settings)
-		l.implementations.Iterations[i] = dataIterator
-		l.dataIterators[i] = dataIterator
+	for i, iteration := range l.Iterations {
+		iteration.Configure(i, l.settings)
 	}
 }
 
@@ -68,15 +62,15 @@ func NewLearningObjective(
 	settings *simulator.LoadSettingsConfig,
 ) *LearningObjective {
 	iterations := make([]simulator.Iteration, 0)
-	dataIterators := make([]*DataIterator, 0)
+	dataIterations := make([]IterationWithObjective, 0)
 	for i, objective := range config.Objectives {
-		dataIterator := &DataIterator{
+		dataIteration := &DataIterationWithObjective{
 			logLikelihood: objective,
 			streamer:      config.Streaming[i].DataStreamer,
 		}
-		dataIterator.Configure(i, settings)
-		iterations = append(iterations, dataIterator)
-		dataIterators = append(dataIterators, dataIterator)
+		dataIteration.Configure(i, settings)
+		iterations = append(iterations, dataIteration)
+		dataIterations = append(dataIterations, dataIteration)
 	}
 	implementations := &simulator.LoadImplementationsConfig{
 		Iterations:           iterations,
@@ -86,8 +80,8 @@ func NewLearningObjective(
 		TimestepFunction:     config.Streaming[0].TimestepFunction,
 	}
 	return &LearningObjective{
+		Iterations:      dataIterations,
 		config:          config,
-		dataIterators:   dataIterators,
 		settings:        settings,
 		implementations: implementations,
 	}
