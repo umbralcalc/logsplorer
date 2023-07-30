@@ -10,7 +10,7 @@ import (
 // by running the stochadex simulator as a data iterator and computing the
 // cumulative log-likelihood.
 type LearningObjective struct {
-	Iterations      []IterationWithObjective
+	Iterations      []*IterationWithObjective
 	config          *LearningConfig
 	settings        *simulator.LoadSettingsConfig
 	implementations *simulator.LoadImplementationsConfig
@@ -61,28 +61,20 @@ func NewLearningObjective(
 	config *LearningConfig,
 	settings *simulator.LoadSettingsConfig,
 ) *LearningObjective {
-	iterations := make([]simulator.Iteration, 0)
-	dataIterations := make([]IterationWithObjective, 0)
+	dataIterations := make([]*IterationWithObjective, 0)
 	for i, objective := range config.Objectives {
-		dataIteration := &DataIterationWithObjective{
+		iteration := &IterationWithObjective{
 			logLikelihood: objective,
-			streamer:      config.Streaming[i].DataStreamer,
+			iteration:     config.Streaming.Iterations[i],
 		}
-		dataIteration.Configure(i, settings)
-		iterations = append(iterations, dataIteration)
-		dataIterations = append(dataIterations, dataIteration)
-	}
-	implementations := &simulator.LoadImplementationsConfig{
-		Iterations:           iterations,
-		OutputCondition:      &simulator.NilOutputCondition{},
-		OutputFunction:       &simulator.NilOutputFunction{},
-		TerminationCondition: config.Streaming[0].TerminationCondition,
-		TimestepFunction:     config.Streaming[0].TimestepFunction,
+		iteration.Configure(i, settings)
+		dataIterations = append(dataIterations, iteration)
+		config.Streaming.Iterations[i] = iteration
 	}
 	return &LearningObjective{
 		Iterations:      dataIterations,
 		config:          config,
 		settings:        settings,
-		implementations: implementations,
+		implementations: config.Streaming,
 	}
 }

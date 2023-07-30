@@ -16,14 +16,26 @@ func newSimpleLearningConfigForTests(
 	settings *simulator.LoadSettingsConfig,
 	conditionalProb filter.ConditionalProbability,
 ) *learning.LearningConfig {
-	streamingConfigs := make([]*learning.DataStreamingConfig, 0)
-	streamingConfig := learning.NewMemoryDataStreamingConfigFromCsv(
+	implementations := &simulator.LoadImplementationsConfig{
+		Iterations:      make([]simulator.Iteration, 0),
+		OutputCondition: &simulator.NilOutputCondition{},
+		OutputFunction:  &simulator.NilOutputFunction{},
+		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
+			MaxNumberOfSteps: 100,
+		},
+		TimestepFunction: learning.NewMemoryTimestepFunctionFromCsv(
+			"test_file.csv",
+			0,
+			true,
+		),
+	}
+	iteration := learning.NewMemoryIterationFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},
 		true,
 	)
-	streamingConfigs = append(streamingConfigs, streamingConfig)
+	implementations.Iterations = append(implementations.Iterations, iteration)
 	objectives := make([]learning.LogLikelihood, 0)
 	logLike := &filter.ProbabilityFilterLogLikelihood{
 		Prob:       conditionalProb,
@@ -32,7 +44,7 @@ func newSimpleLearningConfigForTests(
 	}
 	objectives = append(objectives, logLike)
 	return &learning.LearningConfig{
-		Streaming:  streamingConfigs,
+		Streaming:  implementations,
 		Objectives: objectives,
 	}
 }

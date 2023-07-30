@@ -10,48 +10,36 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-// DataStreamer defines the interface that must be implemented to
-// support streaming data from any source to a LearningObjective.
-type DataStreamer interface {
-	NextValue(
-		timestepsHistory *simulator.CumulativeTimestepsHistory,
-	) []float64
-}
-
-// MemoryDataStreamer provides a stream of data which is already know from a separate
-// data source and is held in memory.
-type MemoryDataStreamer struct {
+// MemoryIteration provides a stream of data which is already know from a
+// separate data source and is held in memory.
+type MemoryIteration struct {
 	Data map[float64][]float64
 }
 
-func (m *MemoryDataStreamer) NextValue(
+func (m *MemoryIteration) Configure(
+	partitionIndex int,
+	settings *simulator.LoadSettingsConfig,
+) {
+}
+
+func (m *MemoryIteration) Iterate(
+	params *simulator.OtherParams,
+	partitionIndex int,
+	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
 	return m.Data[timestepsHistory.Values.AtVec(0)]
 }
 
-// MemoryTimestepFunction provides a stream of timesteps which already known from
-// a separate data source and is held in memory.
-type MemoryTimestepFunction struct {
-	NextIncrements map[float64]float64
-}
-
-func (m *MemoryTimestepFunction) SetNextIncrement(
-	timestepsHistory *simulator.CumulativeTimestepsHistory,
-) *simulator.CumulativeTimestepsHistory {
-	timestepsHistory.NextIncrement = m.NextIncrements[timestepsHistory.Values.AtVec(0)]
-	return timestepsHistory
-}
-
-// NewMemoryDataStreamingConfigFromCsv creates a new DataStreamingConfig for a
-// MemoryDataStreamer based on data that is read in from the provided csv file
-// and some specified columns for time and state.
-func NewMemoryDataStreamingConfigFromCsv(
+// NewMemoryIterationFromCsv creates a new MemoryIteration based on data
+// that is read in from the provided csv file and some specified columns
+// for time and state.
+func NewMemoryIterationFromCsv(
 	filePath string,
 	timeColumn int,
 	stateColumns []int,
 	skipHeaderRow bool,
-) *DataStreamingConfig {
+) *MemoryIteration {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
@@ -69,10 +57,9 @@ func NewMemoryDataStreamingConfigFromCsv(
 	if err != nil {
 		log.Fatal("Unable to parse file as CSV for "+filePath, err)
 	}
-	var time, increment float64
+	var time float64
 	data := make(map[float64][]float64)
-	timeIncrements := make(map[float64]float64)
-	for j, row := range records {
+	for _, row := range records {
 		if skipHeaderRow {
 			skipHeaderRow = false
 			continue
@@ -98,6 +85,53 @@ func NewMemoryDataStreamingConfigFromCsv(
 			floatRow = append(floatRow, dataPoint)
 		}
 		data[time] = floatRow
+	}
+	return &MemoryIteration{Data: data}
+}
+
+// MemoryTimestepFunction provides a stream of timesteps which already known from
+// a separate data source and is held in memory.
+type MemoryTimestepFunction struct {
+	NextIncrements map[float64]float64
+}
+
+func (m *MemoryTimestepFunction) SetNextIncrement(
+	timestepsHistory *simulator.CumulativeTimestepsHistory,
+) *simulator.CumulativeTimestepsHistory {
+	timestepsHistory.NextIncrement = m.NextIncrements[timestepsHistory.Values.AtVec(0)]
+	return timestepsHistory
+}
+
+// NewMemoryTimestepFunctionFromCsv creates a new MemoryTimestepFunction
+// based on data that is read in from the provided csv file and some specified
+// columns for time and state.
+func NewMemoryTimestepFunctionFromCsv(
+	filePath string,
+	timeColumn int,
+	skipHeaderRow bool,
+) *MemoryTimestepFunction {
+	f, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal("Unable to read input file "+filePath, err)
+	}
+	defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("Unable to parse file as CSV for "+filePath, err)
+	}
+	var increment float64
+	timeIncrements := make(map[float64]float64)
+	for j, row := range records {
+		if skipHeaderRow {
+			skipHeaderRow = false
+			continue
+		}
+		time, err := strconv.ParseFloat(row[timeColumn], 64)
+		if err != nil {
+			fmt.Printf("Error converting string: %v", err)
+		}
 		if j < len(records)-1 {
 			dataPoint, err := strconv.ParseFloat(records[j+1][timeColumn], 64)
 			if err != nil {
@@ -107,11 +141,5 @@ func NewMemoryDataStreamingConfigFromCsv(
 		}
 		timeIncrements[time] = increment
 	}
-	return &DataStreamingConfig{
-		DataStreamer:     &MemoryDataStreamer{Data: data},
-		TimestepFunction: &MemoryTimestepFunction{NextIncrements: timeIncrements},
-		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
-			MaxNumberOfSteps: len(timeIncrements),
-		},
-	}
+	return &MemoryTimestepFunction{NextIncrements: timeIncrements}
 }

@@ -12,12 +12,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// StochadexImplementationStrings is the yaml-loadable config which consists of
+// string type names from the stochadex to insert into templating.
+type StochadexImplementationStrings struct {
+	Iterations           []string `yaml:"iterations"`
+	OutputCondition      string   `yaml:"output_condition"`
+	OutputFunction       string   `yaml:"output_function"`
+	TerminationCondition string   `yaml:"termination_condition"`
+	TimestepFunction     string   `yaml:"timestep_function"`
+}
+
 // ImplementationStrings is the yaml-loadable config which consists of string type
 // names to insert into templating.
 type ImplementationStrings struct {
-	DataStreamers         []string `yaml:"data_streamers"`
-	Objectives            []string `yaml:"objectives"`
-	OptimisationAlgorithm string   `yaml:"optimisation_algorithm"`
+	Streaming             StochadexImplementationStrings `yaml:"streaming"`
+	Objectives            []string                       `yaml:"objectives"`
+	OptimisationAlgorithm string                         `yaml:"optimisation_algorithm"`
 }
 
 // LearnadexArgParse builds the configs parsed as args to the learnadex binary and
@@ -70,8 +80,8 @@ func writeMainProgram() {
 	settingsFile, implementations := LearnadexArgParse()
 	fmt.Println("\nParsed implementations:")
 	fmt.Println(implementations)
-	streamingConfigs := "[]*learning.DataStreamingConfig{" +
-		strings.Join(implementations.DataStreamers, ", ") + "}"
+	iterations := "[]simulator.Iteration{" +
+		strings.Join(implementations.Streaming.Iterations, ", ") + "}"
 	objectives := "[]learning.LogLikelihood{" +
 		strings.Join(implementations.Objectives, ", ") + "}"
 	codeTemplate := template.New("learnadexMain")
@@ -89,9 +99,16 @@ import (
 
 func main() {
 	settings := simulator.NewLoadSettingsConfigFromYaml("{{.SettingsFile}}")
+	iterations := {{.Iterations}}
 	config := &learning.LearnadexConfig{
 		Learning: &learning.LearningConfig{
-			Streaming:  {{.StreamingConfigs}},
+			Streaming:  &simulator.LoadImplementationsConfig{
+				Iterations:      iterations,
+				OutputCondition: {{.OutputCondition}},
+				OutputFunction:  {{.OutputFunction}},
+				TerminationCondition: {{.TerminationCondition}},
+				TimestepFunction: {{.TimestepFunction}},
+			},
 			Objectives: {{.Objectives}},
 		},
 		Optimiser: {{.Algorithm}},
@@ -118,10 +135,14 @@ func main() {
 	err = codeTemplate.Execute(
 		file,
 		map[string]string{
-			"SettingsFile":     settingsFile,
-			"StreamingConfigs": streamingConfigs,
-			"Objectives":       objectives,
-			"Algorithm":        implementations.OptimisationAlgorithm,
+			"SettingsFile":         settingsFile,
+			"Iterations":           iterations,
+			"OutputCondition":      implementations.Streaming.OutputCondition,
+			"OutputFunction":       implementations.Streaming.OutputFunction,
+			"TerminationCondition": implementations.Streaming.TerminationCondition,
+			"TimestepFunction":     implementations.Streaming.TimestepFunction,
+			"Objectives":           objectives,
+			"Algorithm":            implementations.OptimisationAlgorithm,
 		},
 	)
 	if err != nil {

@@ -35,21 +35,33 @@ func (d *dummyConditionalProbability) Evaluate(
 }
 
 func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
-	streamingConfigs := make([]*DataStreamingConfig, 0)
-	streamingConfig := NewMemoryDataStreamingConfigFromCsv(
+	implementations := &simulator.LoadImplementationsConfig{
+		Iterations:      make([]simulator.Iteration, 0),
+		OutputCondition: &simulator.NilOutputCondition{},
+		OutputFunction:  &simulator.NilOutputFunction{},
+		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
+			MaxNumberOfSteps: 100,
+		},
+		TimestepFunction: NewMemoryTimestepFunctionFromCsv(
+			"test_file.csv",
+			0,
+			true,
+		),
+	}
+	iteration := NewMemoryIterationFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},
 		true,
 	)
-	streamingConfigs = append(streamingConfigs, streamingConfig)
-	anotherStreamingConfig := NewMemoryDataStreamingConfigFromCsv(
+	implementations.Iterations = append(implementations.Iterations, iteration)
+	anotherIteration := NewMemoryIterationFromCsv(
 		"test_file.csv",
 		0,
 		[]int{1, 2, 3},
 		true,
 	)
-	streamingConfigs = append(streamingConfigs, anotherStreamingConfig)
+	implementations.Iterations = append(implementations.Iterations, anotherIteration)
 	objectives := make([]LogLikelihood, 0)
 	firstObjective := &filter.ProbabilityFilterLogLikelihood{
 		Prob:       &dummyConditionalProbability{},
@@ -66,7 +78,7 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	secondObjective.Configure(1, settings)
 	objectives = append(objectives, secondObjective)
 	return &LearningConfig{
-		Streaming:  streamingConfigs,
+		Streaming:  implementations,
 		Objectives: objectives,
 	}
 }
