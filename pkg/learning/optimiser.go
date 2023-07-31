@@ -18,7 +18,9 @@ type OptimisationAlgorithm interface {
 	) []*simulator.OtherParams
 }
 
-// OptimiserParamsMapping
+// OptimiserParamsMapping is a struct which ensures that the configured
+// params of the simulator can be correctly mapped to and from a generic
+// optimisation algorithm.
 type OptimiserParamsMapping struct {
 	Names            []string
 	ParamIndices     []int
@@ -49,7 +51,8 @@ func (o *OptimiserParamsMapping) SortByOptimiserIndices() {
 	o.OptimiserIndices = sortedOptimiserIndices
 }
 
-// OptimiserParamsMappings
+// OptimiserParamsMappings provides a OptimiserParamsMapping for both
+// .FloatParams and .IntParams in the simulator.OtherParams struct.
 type OptimiserParamsMappings struct {
 	FloatParams *OptimiserParamsMapping
 	IntParams   *OptimiserParamsMapping
@@ -106,7 +109,7 @@ func (o *OptimiserParamsMappings) UpdateParamsFromOptimiser(
 	return params
 }
 
-// NewOptimiserParamsMappings
+// NewOptimiserParamsMappings creates a new OptimiserParamsMappings.
 func NewOptimiserParamsMappings(
 	params []*simulator.OtherParams,
 ) *OptimiserParamsMappings {

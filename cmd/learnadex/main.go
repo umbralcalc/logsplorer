@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/akamensky/argparse"
+	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,9 +26,9 @@ type StochadexImplementationStrings struct {
 // ImplementationStrings is the yaml-loadable config which consists of string type
 // names to insert into templating.
 type ImplementationStrings struct {
-	Streaming             StochadexImplementationStrings `yaml:"streaming"`
-	Objectives            []string                       `yaml:"objectives"`
-	OptimisationAlgorithm string                         `yaml:"optimisation_algorithm"`
+	Streaming             simulator.ImplementationStrings `yaml:"streaming"`
+	Objectives            []string                        `yaml:"objectives"`
+	OptimisationAlgorithm string                          `yaml:"optimisation_algorithm"`
 }
 
 // LearnadexArgParse builds the configs parsed as args to the learnadex binary and
@@ -113,7 +114,10 @@ func main() {
 		},
 		Optimiser: {{.Algorithm}},
 	}
-	params := learning.RunFilterParamsLearning(config, settings)
+	params := config.Optimiser.Run(
+		learning.NewLearningObjective(config.Learning, settings),
+		settings.OtherParams,
+	)
 	for i, p := range params {
 		fmt.Println("partition ", i)
 		for k, v := range p.FloatParams {
