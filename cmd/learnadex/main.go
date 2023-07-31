@@ -13,16 +13,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// StochadexImplementationStrings is the yaml-loadable config which consists of
-// string type names from the stochadex to insert into templating.
-type StochadexImplementationStrings struct {
-	Iterations           []string `yaml:"iterations"`
-	OutputCondition      string   `yaml:"output_condition"`
-	OutputFunction       string   `yaml:"output_function"`
-	TerminationCondition string   `yaml:"termination_condition"`
-	TimestepFunction     string   `yaml:"timestep_function"`
-}
-
 // ImplementationStrings is the yaml-loadable config which consists of string type
 // names to insert into templating.
 type ImplementationStrings struct {
