@@ -44,8 +44,9 @@ func newSimpleLearningConfigForTests(
 	}
 	objectives = append(objectives, logLike)
 	return &learning.LearningConfig{
-		Streaming:  implementations,
-		Objectives: objectives,
+		Streaming:       implementations,
+		Objectives:      objectives,
+		ObjectiveOutput: &learning.NilObjectiveOutputFunction{},
 	}
 }
 

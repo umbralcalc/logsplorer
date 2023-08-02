@@ -11,6 +11,7 @@ import (
 // cumulative log-likelihood.
 type LearningObjective struct {
 	Iterations      []*IterationWithObjective
+	OutputFunction  ObjectiveOutputFunction
 	config          *LearningConfig
 	settings        *simulator.LoadSettingsConfig
 	implementations *simulator.LoadImplementationsConfig
@@ -37,10 +38,17 @@ func (l *LearningObjective) Evaluate(
 		coordinator.Step(&wg)
 	}
 
-	// store the objective value found in this step
+	// store the objective value found in this step and output its values for
+	// each of the state partitions
 	objective := 0.0
-	for _, iteration := range l.Iterations {
-		objective += iteration.GetObjective()
+	for partitionIndex, iteration := range l.Iterations {
+		partitionObjective := iteration.GetObjective()
+		l.OutputFunction.Output(
+			partitionIndex,
+			partitionObjective,
+			newParams[partitionIndex],
+		)
+		objective += partitionObjective
 	}
 
 	// reset the stateful data iterators to be used again
@@ -73,6 +81,7 @@ func NewLearningObjective(
 	}
 	return &LearningObjective{
 		Iterations:      dataIterations,
+		OutputFunction:  config.ObjectiveOutput,
 		config:          config,
 		settings:        settings,
 		implementations: config.Streaming,

@@ -11,6 +11,7 @@ objectives:
     Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, 
     DataLink: &filter.NormalDataLinkingLogLikelihood{}, 
     Statistics: &filter.Statistics{}}"
+objective_output: "&learning.NilObjectiveOutputFunction{}"
 optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
     Method: &optimize.NelderMead{},
     Settings: &optimize.Settings{Concurrent: 10}}"

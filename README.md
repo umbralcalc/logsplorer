@@ -18,3 +18,19 @@ go build -o bin/ ./cmd/learnadex
 # run your configs
 ./bin/learnadex --settings ./cfg/settings_config.yaml \
 --implementations ./cfg/implementations_config.yaml
+```
+
+## Building and running the data exploration dashboard
+
+```shell
+# build the app
+cd ./app && npm run build && cd ..
+
+# launch the dashboard
+cd ./app && serve -s build && cd ..
+
+# in a separate terminal, run your configs with the dashboard on
+./bin/learnadex --settings ./cfg/settings_config.yaml \
+--implementations ./cfg/implementations_config.yaml \
+--dashboard ./cfg/dashboard_config.yaml
+```

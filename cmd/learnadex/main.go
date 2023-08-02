@@ -13,11 +13,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// DashboardConfig is a yaml-loadable config for the data exploration dashboard.
+type DashboardConfig struct {
+	Address string `yaml:"address"`
+	Handle  string `yaml:"handle"`
+}
+
 // ImplementationStrings is the yaml-loadable config which consists of string type
 // names to insert into templating.
 type ImplementationStrings struct {
 	Streaming             simulator.ImplementationStrings `yaml:"streaming"`
 	Objectives            []string                        `yaml:"objectives"`
+	ObjectiveOutput       string                          `yaml:"objective_output"`
 	OptimisationAlgorithm string                          `yaml:"optimisation_algorithm"`
 }
 
@@ -26,6 +33,7 @@ type ImplementationStrings struct {
 func LearnadexArgParse() (
 	string,
 	*ImplementationStrings,
+	*DashboardConfig,
 ) {
 	parser := argparse.NewParser("learnadex", "inference and emulation of stochastic phenomena")
 	settingsFile := parser.String(
@@ -38,6 +46,14 @@ func LearnadexArgParse() (
 		"implementations",
 		&argparse.Options{
 			Required: true,
+			Help:     "yaml config path for string implementations",
+		},
+	)
+	dashboardFile := parser.String(
+		"d",
+		"dashboard",
+		&argparse.Options{
+			Required: false,
 			Help:     "yaml config path for string implementations",
 		},
 	)
@@ -61,14 +77,33 @@ func LearnadexArgParse() (
 	if err != nil {
 		panic(err)
 	}
-	return *settingsFile, &implementations
+	dashboardConfig := DashboardConfig{}
+	if *dashboardFile == "" {
+		fmt.Printf("Parsed no dashboard config file: running without dashboard")
+	} else {
+		yamlFile, err := ioutil.ReadFile(*dashboardFile)
+		if err != nil {
+			panic(err)
+		}
+		err = yaml.Unmarshal(yamlFile, &dashboardConfig)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return *settingsFile, &implementations, &dashboardConfig
 }
 
 // writeMainProgram writes string representations of various types of data
 // to a template tmp/main.go file ready for runtime execution in this main.go
 func writeMainProgram() {
 	fmt.Println("\nReading in args...")
-	settingsFile, implementations := LearnadexArgParse()
+	settingsFile, implementations, dashboard := LearnadexArgParse()
+	dashboardOn := "true"
+	if dashboard.Address == "" {
+		dashboardOn = "false"
+		dashboard.Address = "dummy"
+		dashboard.Handle = "dummy"
+	}
 	fmt.Println("\nParsed implementations:")
 	fmt.Println(implementations)
 	iterations := "[]simulator.Iteration{" +
@@ -80,6 +115,8 @@ func writeMainProgram() {
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/umbralcalc/learnadex/pkg/filter"
 	"github.com/umbralcalc/learnadex/pkg/learning"
@@ -101,20 +138,45 @@ func main() {
 				TimestepFunction: {{.TimestepFunction}},
 			},
 			Objectives: {{.Objectives}},
+			ObjectiveOutput: {{.ObjectiveOutput}},
 		},
 		Optimiser: {{.Algorithm}},
 	}
-	params := config.Optimiser.Run(
-		learning.NewLearningObjective(config.Learning, settings),
-		settings.OtherParams,
-	)
-	for i, p := range params {
-		fmt.Println("partition ", i)
-		for k, v := range p.FloatParams {
-			fmt.Println(k, v)
-		}
-		for k, v := range p.IntParams {
-			fmt.Println(k, v)
+	if {{.Dashboard}} {
+		http.HandleFunc(
+			"{{.Handle}}",
+			func(w http.ResponseWriter, r *http.Request) {
+				config.Learning.ObjectiveOutput = 
+				    learning.NewHttpObjectiveOutputFunction(w)
+				params := config.Optimiser.Run(
+					learning.NewLearningObjective(config.Learning, settings),
+					settings.OtherParams,
+				)
+				for i, p := range params {
+					fmt.Println("partition ", i)
+					for k, v := range p.FloatParams {
+						fmt.Println(k, v)
+					}
+					for k, v := range p.IntParams {
+						fmt.Println(k, v)
+					}
+				}
+			},
+		)
+		log.Fatal(http.ListenAndServe("{{.Address}}", nil))
+	} else {
+		params := config.Optimiser.Run(
+			learning.NewLearningObjective(config.Learning, settings),
+			settings.OtherParams,
+		)
+		for i, p := range params {
+			fmt.Println("partition ", i)
+			for k, v := range p.FloatParams {
+				fmt.Println(k, v)
+			}
+			for k, v := range p.IntParams {
+				fmt.Println(k, v)
+			}
 		}
 	}
 }`))
@@ -131,11 +193,15 @@ func main() {
 		map[string]string{
 			"SettingsFile":         settingsFile,
 			"Iterations":           iterations,
+			"Dashboard":            dashboardOn,
+			"Address":              dashboard.Address,
+			"Handle":               dashboard.Handle,
 			"OutputCondition":      implementations.Streaming.OutputCondition,
 			"OutputFunction":       implementations.Streaming.OutputFunction,
 			"TerminationCondition": implementations.Streaming.TerminationCondition,
 			"TimestepFunction":     implementations.Streaming.TimestepFunction,
 			"Objectives":           objectives,
+			"ObjectiveOutput":      implementations.ObjectiveOutput,
 			"Algorithm":            implementations.OptimisationAlgorithm,
 		},
 	)

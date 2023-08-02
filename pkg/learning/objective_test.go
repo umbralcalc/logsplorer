@@ -78,8 +78,9 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	secondObjective.Configure(1, settings)
 	objectives = append(objectives, secondObjective)
 	return &LearningConfig{
-		Streaming:  implementations,
-		Objectives: objectives,
+		Streaming:       implementations,
+		Objectives:      objectives,
+		ObjectiveOutput: &NilObjectiveOutputFunction{},
 	}
 }
 
