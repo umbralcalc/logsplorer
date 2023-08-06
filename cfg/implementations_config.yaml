@@ -8,10 +8,10 @@ streaming:
 objectives:
 - "&filter.ProbabilityFilterLogLikelihood{
     Prob: &models.GaussianProcessConditionalProbability{
-    Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, 
+      Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, 
     DataLink: &filter.NormalDataLinkingLogLikelihood{}, 
     Statistics: &filter.Statistics{}}"
-objective_output: "&learning.NilObjectiveOutputFunction{}"
+objective_output: 'learning.NewJsonLogObjectiveOutputFunction("dat/test.log")'
 optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
     Method: &optimize.NelderMead{},
     Settings: &optimize.Settings{Concurrent: 10}}"

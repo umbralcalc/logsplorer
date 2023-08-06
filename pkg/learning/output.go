@@ -3,8 +3,10 @@ package learning
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"log"
+	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
@@ -36,12 +38,13 @@ func (s *StdoutObjectiveOutputFunction) Output(
 	fmt.Println(partitionIndex, objective, params)
 }
 
-// HttpObjectiveOutputFunction outputs data to an HTTP server from the LearningObjective.
-type HttpObjectiveOutputFunction struct {
-	writer http.ResponseWriter
+// JsonLogObjectiveOutputFunction outputs data to log of json packets from
+// the LearningObjective.
+type JsonLogObjectiveOutputFunction struct {
+	logger *logrus.Logger
 }
 
-func (p *HttpObjectiveOutputFunction) Output(
+func (j *JsonLogObjectiveOutputFunction) Output(
 	partitionIndex int,
 	objective float64,
 	params *simulator.OtherParams,
@@ -57,13 +60,25 @@ func (p *HttpObjectiveOutputFunction) Output(
 		FloatParams:    params.FloatParams,
 		IntParams:      params.IntParams,
 	}
-	p.writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(p.writer).Encode(outputPacket)
+	jsonData, err := json.Marshal(outputPacket)
+	if err != nil {
+		log.Printf("Error encoding JSON: %s\n", err)
+		panic(err)
+	}
+	j.logger.Info(string(jsonData))
 }
 
-// NewHttpObjectiveOutputFunction creates a new HttpObjectiveOutputFunction.
-func NewHttpObjectiveOutputFunction(
-	writer http.ResponseWriter,
-) *HttpObjectiveOutputFunction {
-	return &HttpObjectiveOutputFunction{writer: writer}
+// NewJsonLogObjectiveOutputFunction creates a new JsonLogObjectiveOutputFunction.
+func NewJsonLogObjectiveOutputFunction(
+	filePath string,
+) *JsonLogObjectiveOutputFunction {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	file, err := os.Create(filePath)
+	if err != nil {
+		log.Fatal("Error creating log file:", err)
+		panic(err)
+	}
+	logger := logrus.New()
+	logger.Out = file
+	return &JsonLogObjectiveOutputFunction{logger: logger}
 }
