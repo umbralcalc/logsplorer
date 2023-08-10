@@ -4,7 +4,7 @@ The 'learnadex' builds on the capabilities and framework provided by the [stocha
 
 ## Need more context and documentation?
 
-The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 2** of this very delightful book: [Diffusing Ideas](https://umbralcalc.github.io/diffusing-ideas/).
+The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 2** and **Part 4** of this very delightful book: [Diffusing Ideas](https://umbralcalc.github.io/diffusing-ideas/).
 
 ## Building and running the binary
 

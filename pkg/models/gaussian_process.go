@@ -53,7 +53,7 @@ func (g *GaussianProcessConditionalProbability) Configure(
 		Max: 1e-4,
 		Src: rand.NewSource(settings.Seeds[partitionIndex]),
 	}
-	for _, time := range settings.OtherParams[partitionIndex].FloatParams["times_to_fit"] {
+	for i, time := range settings.OtherParams[partitionIndex].FloatParams["times_to_fit"] {
 		_, ok := g.meansInTime[time]
 		if !ok {
 			g.meansInTime[time] = g.initialMeans
@@ -65,16 +65,16 @@ func (g *GaussianProcessConditionalProbability) Configure(
 			initVals = append(initVals, mean+uniformDist.Rand())
 		}
 		settings.OtherParams[partitionIndex].
-			FloatParams[fmt.Sprintf("means_at_time_%f", time)] = initVals
+			FloatParams[fmt.Sprintf("means_at_time_%d", i)] = initVals
 		settings.OtherParams[partitionIndex].
-			FloatParamsMask[fmt.Sprintf("means_at_time_%f", time)] = affirmativeMask
+			FloatParamsMask[fmt.Sprintf("means_at_time_%d", i)] = affirmativeMask
 	}
 	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
 func (g *GaussianProcessConditionalProbability) SetParams(params *simulator.OtherParams) {
-	for _, time := range params.FloatParams["times_to_fit"] {
-		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%f", time)]
+	for i, time := range params.FloatParams["times_to_fit"] {
+		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%d", i)]
 	}
 	g.Kernel.SetParams(params)
 }
