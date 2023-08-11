@@ -15,21 +15,26 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// LogsplorerConfig defines the settings which can be used to configure the
+// logs exploration and visualisation app.
 type LogsplorerConfig struct {
 	Address string `yaml:"address"`
 	Handle  string `yaml:"handle"`
 }
 
+// QueryLogEntry is the output format from the logsplorer api.
 type QueryLogEntry struct {
 	PartitionIterations int         `json:"partition_iterations"`
 	Entry               interface{} `json:"entry"`
 }
 
+// ValueLimit just represents a limit on the range of a given log value.
 type ValueLimit struct {
 	Upper bool
 	Limit float64
 }
 
+// DataFilter is the struct containing the filtering logic to apply to the logs.
 type DataFilter struct {
 	AllowedValues []float64
 	ValueLimits   []ValueLimit
@@ -95,6 +100,8 @@ func (d *DataFilter) SetValue(value string) error {
 	return nil
 }
 
+// readLogEntries reads a file while apply the filtering logic to its data line-by-line
+// and then returns the corresponding log entry structs which pass through the filter.
 func readLogEntries(
 	filename string,
 	dataFilterByParam map[string]*DataFilter,
@@ -190,6 +197,8 @@ func readLogEntries(
 	return queryLogEntries, nil
 }
 
+// reorderKeyValuesSymbols is a small adjustment needed to key and values so that other
+// symbols can be used in api query strings.
 func reorderKeyValuesSymbols(key string, values []string) (string, []string) {
 	if strings.Contains(key, ">") {
 		values = []string{key}
@@ -202,6 +211,8 @@ func reorderKeyValuesSymbols(key string, values []string) (string, []string) {
 	return key, values
 }
 
+// LogsplorerArgParse builds the configs parsed as args to the logsplorer binary and
+// also retrieves other args.
 func LogsplorerArgParse() *LogsplorerConfig {
 	parser := argparse.NewParser("logsplorer", "visualisation and exploration of learnadex logs")
 	configFile := parser.String(
