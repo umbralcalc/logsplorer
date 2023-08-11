@@ -19,3 +19,13 @@ go build -o bin/ ./cmd/learnadex
 ./bin/learnadex --settings ./cfg/settings_config.yaml \
 --implementations ./cfg/implementations_config.yaml
 ```
+
+## Building and running the logs explorer and visualisation app
+
+```shell
+# build the binary
+go build -o bin/ ./cmd/logsplorer
+
+# run the app
+./bin/logsplorer --config ./cfg/logsplorer_config.yaml
+```
