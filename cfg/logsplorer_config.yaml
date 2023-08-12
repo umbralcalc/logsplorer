@@ -1,2 +1,5 @@
 address: ":8080"
 handle: "/api/logsplorer"
+allowed_request_origins:
+- "http://localhost:3000"
+launch_viz_app: true

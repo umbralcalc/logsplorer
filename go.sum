@@ -19,6 +19,8 @@ github.com/mkmik/argsort v1.1.0/go.mod h1:p7hnzFvQ7+BTf9C0IvBxJhd+EakmJntn5NFpzF
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
+github.com/rs/cors v1.9.0 h1:l9HGsTsHJcvW14Nk7J9KFz8bzeAWXn3CG6bgt7LsrAE=
+github.com/rs/cors v1.9.0/go.mod h1:XyqrcTp5zjWr1wsJ8PIRZssZ8b/WMcMf71DJnit4EMU=
 github.com/umbralcalc/stochadex v0.0.0-20230731061302-edc92b8c2d79 h1:2nro7YZmhjxRqcyKfwzNBqCfYorAZgBLPBBObyGnNr0=
 github.com/umbralcalc/stochadex v0.0.0-20230731061302-edc92b8c2d79/go.mod h1:HjlNgQZlD+NISXicaj4My0JFY1ZOm5NsBKbxD5jd/3E=
 golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691 h1:/yRP+0AN7mf5DkD3BAI6TOFnd51gEoDEb8o35jIFtgw=

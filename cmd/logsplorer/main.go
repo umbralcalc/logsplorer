@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/akamensky/argparse"
+	"github.com/rs/cors"
 	"github.com/umbralcalc/learnadex/pkg/learning"
 	"gopkg.in/yaml.v2"
 )
@@ -18,8 +21,10 @@ import (
 // LogsplorerConfig defines the settings which can be used to configure the
 // logs exploration and visualisation app.
 type LogsplorerConfig struct {
-	Address string `yaml:"address"`
-	Handle  string `yaml:"handle"`
+	Address               string   `yaml:"address"`
+	Handle                string   `yaml:"handle"`
+	AllowedRequestOrigins []string `yaml:"allowed_request_origins"`
+	LaunchVizApp          bool     `yaml:"launch_viz_app"`
 }
 
 // QueryLogEntry is the output format from the logsplorer api.
@@ -214,7 +219,10 @@ func reorderKeyValuesSymbols(key string, values []string) (string, []string) {
 // LogsplorerArgParse builds the configs parsed as args to the logsplorer binary and
 // also retrieves other args.
 func LogsplorerArgParse() *LogsplorerConfig {
-	parser := argparse.NewParser("logsplorer", "visualisation and exploration of learnadex logs")
+	parser := argparse.NewParser(
+		"logsplorer",
+		"visualisation and exploration of learnadex logs",
+	)
 	configFile := parser.String(
 		"c",
 		"config",
@@ -239,9 +247,38 @@ func LogsplorerArgParse() *LogsplorerConfig {
 	return &config
 }
 
+func startApp() (*os.Process, error) {
+	cmd := exec.Command("serve", "-s", "build")
+	cmd.Dir = "app/"
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start visualisation app: %w", err)
+	}
+
+	return cmd.Process, nil
+}
+
 func main() {
 	config := LogsplorerArgParse()
-	http.HandleFunc(config.Handle, func(w http.ResponseWriter, r *http.Request) {
+	var appProcess *os.Process
+	if config.LaunchVizApp {
+		appProcess, err := startApp()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer appProcess.Signal(os.Interrupt)
+	}
+	mux := http.NewServeMux()
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   config.AllowedRequestOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+	handler := corsMiddleware.Handler(mux)
+	mux.HandleFunc(config.Handle, func(w http.ResponseWriter, r *http.Request) {
 		logFilenamesGet := r.URL.Query().Get("filenames")
 		filenames := strings.Split(logFilenamesGet, ",")
 		allQueryLogEntries := make([]QueryLogEntry, 0)
@@ -274,6 +311,9 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(allQueryLogEntries)
 	})
-
-	http.ListenAndServe(config.Address, nil)
+	http.ListenAndServe(config.Address, handler)
+	if config.LaunchVizApp {
+		appProcess.Signal(os.Interrupt)
+		appProcess.Wait()
+	}
 }
