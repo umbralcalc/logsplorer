@@ -27,7 +27,6 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <h1>Learnadex Logsplorer</h1>
       <ApiQueryInput onSubmit={handleApiQuerySubmit} />
       <LineChart data={chartData} />
       <h5>Zoom: Mousewheel or Shift + Click + Drag</h5>

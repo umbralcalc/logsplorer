@@ -29,6 +29,7 @@ type LogsplorerConfig struct {
 
 // QueryLogEntry is the output format from the logsplorer api.
 type QueryLogEntry struct {
+	LogFilename         string      `json:"log_filename"`
 	PartitionIterations int         `json:"partition_iterations"`
 	Entry               interface{} `json:"entry"`
 }
@@ -189,6 +190,7 @@ func readLogEntries(
 		queryLogEntries = append(
 			queryLogEntries,
 			QueryLogEntry{
+				LogFilename:         filename,
 				PartitionIterations: partitionIterations[logEntry.PartitionIndex],
 				Entry:               logEntry,
 			},

@@ -32,3 +32,5 @@ go build -o bin/ ./cmd/logsplorer
 # run the app
 ./bin/logsplorer --config ./cfg/logsplorer_config.yaml
 ```
+
+![Using Viz](app/public/using-viz.gif)
