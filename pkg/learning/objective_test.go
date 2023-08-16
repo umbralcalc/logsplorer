@@ -78,9 +78,10 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	secondObjective.Configure(1, settings)
 	objectives = append(objectives, secondObjective)
 	return &LearningConfig{
-		Streaming:       implementations,
-		Objectives:      objectives,
-		ObjectiveOutput: &NilObjectiveOutputFunction{},
+		Streaming:         implementations,
+		StreamingSettings: settings,
+		Objectives:        objectives,
+		ObjectiveOutput:   &NilObjectiveOutputFunction{},
 	}
 }
 
@@ -90,7 +91,7 @@ func TestLearningObjective(t *testing.T) {
 		func(t *testing.T) {
 			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
 			config := newLearningConfigForTests(settings)
-			learningObjective := NewLearningObjective(config, settings)
+			learningObjective := NewLearningObjective(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

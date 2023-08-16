@@ -101,13 +101,14 @@ func main() {
 				TerminationCondition: {{.TerminationCondition}},
 				TimestepFunction: {{.TimestepFunction}},
 			},
+			StreamingSettings: settings,
 			Objectives: {{.Objectives}},
 			ObjectiveOutput: {{.ObjectiveOutput}},
 		},
 		Optimiser: {{.Algorithm}},
 	}
 	params := config.Optimiser.Run(
-		learning.NewLearningObjective(config.Learning, settings),
+		learning.NewLearningObjective(config.Learning),
 		settings.OtherParams,
 	)
 	for i, p := range params {

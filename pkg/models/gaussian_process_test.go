@@ -16,8 +16,8 @@ func TestGaussianProcess(t *testing.T) {
 			gaussianProc := &GaussianProcessConditionalProbability{
 				Kernel: &ConstantGaussianProcessCovarianceKernel{},
 			}
-			config := newSimpleLearningConfigForTests(configPath, settings, gaussianProc)
-			learningObjective := learning.NewLearningObjective(config, settings)
+			config := newSimpleLearningConfigForTests(settings, gaussianProc)
+			learningObjective := learning.NewLearningObjective(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

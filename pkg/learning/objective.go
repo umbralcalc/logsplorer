@@ -65,17 +65,14 @@ func (l *LearningObjective) ResetIterators() {
 
 // NewLearningObjective creates a new LearningObjective struct given a config
 // and loaded settings.
-func NewLearningObjective(
-	config *LearningConfig,
-	settings *simulator.LoadSettingsConfig,
-) *LearningObjective {
+func NewLearningObjective(config *LearningConfig) *LearningObjective {
 	dataIterations := make([]*IterationWithObjective, 0)
 	for i, objective := range config.Objectives {
 		iteration := &IterationWithObjective{
 			logLikelihood: objective,
 			iteration:     config.Streaming.Iterations[i],
 		}
-		iteration.Configure(i, settings)
+		iteration.Configure(i, config.StreamingSettings)
 		dataIterations = append(dataIterations, iteration)
 		config.Streaming.Iterations[i] = iteration
 	}
@@ -83,7 +80,7 @@ func NewLearningObjective(
 		Iterations:      dataIterations,
 		OutputFunction:  config.ObjectiveOutput,
 		config:          config,
-		settings:        settings,
+		settings:        config.StreamingSettings,
 		implementations: config.Streaming,
 	}
 }

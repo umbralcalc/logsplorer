@@ -12,7 +12,6 @@ import (
 // normally-distributed data linking log-likelihood, standard covariance
 // statistics and loads a data streamer from the test_file.csv for testing.
 func newSimpleLearningConfigForTests(
-	extraSettingsConfigPath string,
 	settings *simulator.LoadSettingsConfig,
 	conditionalProb filter.ConditionalProbability,
 ) *learning.LearningConfig {
@@ -44,9 +43,10 @@ func newSimpleLearningConfigForTests(
 	}
 	objectives = append(objectives, logLike)
 	return &learning.LearningConfig{
-		Streaming:       implementations,
-		Objectives:      objectives,
-		ObjectiveOutput: &learning.NilObjectiveOutputFunction{},
+		Streaming:         implementations,
+		StreamingSettings: settings,
+		Objectives:        objectives,
+		ObjectiveOutput:   &learning.NilObjectiveOutputFunction{},
 	}
 }
 
@@ -57,11 +57,10 @@ func TestExponentialTimeWeighting(t *testing.T) {
 			configPath := "exponential_time_weighting_config.yaml"
 			settings := simulator.NewLoadSettingsConfigFromYaml(configPath)
 			config := newSimpleLearningConfigForTests(
-				configPath,
 				settings,
 				&ExponentialTimeWeightingConditionalProbability{},
 			)
-			learningObjective := learning.NewLearningObjective(config, settings)
+			learningObjective := learning.NewLearningObjective(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

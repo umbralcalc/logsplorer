@@ -7,9 +7,10 @@ import (
 // LearningConfig specifies how data is streamed into each partitioned
 // objective function and what each objective function is.
 type LearningConfig struct {
-	Streaming       *simulator.LoadImplementationsConfig
-	Objectives      []LogLikelihood
-	ObjectiveOutput ObjectiveOutputFunction
+	Streaming         *simulator.LoadImplementationsConfig
+	StreamingSettings *simulator.LoadSettingsConfig
+	Objectives        []LogLikelihood
+	ObjectiveOutput   ObjectiveOutputFunction
 }
 
 // LearnadexConfig fully configures a learning problem configured for
