@@ -29,7 +29,7 @@ cd ./app && npm install && npm run build && cd ..
 # build the binary
 go build -o bin/ ./cmd/logsplorer
 
-# run the app
+# run the app and checkout http://localhost:3000
 ./bin/logsplorer --config ./cfg/logsplorer_config.yaml
 ```
 
