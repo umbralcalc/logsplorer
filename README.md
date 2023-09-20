@@ -23,8 +23,8 @@ go build -o bin/ ./cmd/learnadex
 ## Building and running the logs explorer and visualisation app
 
 ```shell
-# build the visualisation app
-cd ./app && npm run build && cd ..
+# install the dependencies for and build the visualisation app
+cd ./app && npm install && npm run build && cd ..
 
 # build the binary
 go build -o bin/ ./cmd/logsplorer
