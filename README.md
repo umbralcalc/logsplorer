@@ -34,3 +34,20 @@ go build -o bin/ ./cmd/logsplorer
 ```
 
 ![Using Viz](app/public/using-viz.gif)
+
+## Building and running the Docker containers (may need sudo)
+
+```shell
+# builds the learnadex container
+docker build -f Dockerfile.learnadex --tag learnadex .
+
+# runs the binary in the container with your configs
+docker run learnadex --settings ./cfg/settings_config.yaml \
+--implementations ./cfg/implementations_config.yaml
+
+# builds the logsplorer container
+docker build -f Dockerfile.logsplorer --tag logsplorer .
+
+# runs the binary in the container with your config
+docker run -p 8080:8080 logsplorer --config ./cfg/logsplorer_config.yaml
+```
