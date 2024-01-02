@@ -4,7 +4,7 @@ The 'learnadex' builds on the capabilities and framework provided by the [stocha
 
 ## Need more context and documentation?
 
-The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 1** of this very delightful book: [Worlds Of Observation](https://umbralcalc.github.io/worlds-of-observation/).
+The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 1** of this very delightful book: [Worlds of Observation](https://umbralcalc.github.io/worlds-of-observation/).
 
 ## Building and running the binary
 
