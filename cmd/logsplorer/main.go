@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -237,7 +236,7 @@ func LogsplorerArgParse() *LogsplorerConfig {
 	if *configFile == "" {
 		panic(fmt.Errorf("Parsed no config file"))
 	}
-	yamlFile, err := ioutil.ReadFile(*configFile)
+	yamlFile, err := os.ReadFile(*configFile)
 	if err != nil {
 		panic(err)
 	}

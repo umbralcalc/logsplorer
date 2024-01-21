@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -53,7 +52,7 @@ func LearnadexArgParse() (
 	if *implementationsFile == "" {
 		panic(fmt.Errorf("Parsed no implementations config file"))
 	}
-	yamlFile, err := ioutil.ReadFile(*implementationsFile)
+	yamlFile, err := os.ReadFile(*implementationsFile)
 	if err != nil {
 		panic(err)
 	}
