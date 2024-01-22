@@ -3,8 +3,8 @@ package models
 import (
 	"testing"
 
-	"github.com/umbralcalc/learnadex/pkg/filter"
 	"github.com/umbralcalc/learnadex/pkg/learning"
+	"github.com/umbralcalc/learnadex/pkg/reweighting"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
@@ -13,7 +13,7 @@ import (
 // statistics and loads a data streamer from the test_file.csv for testing.
 func newSimpleLearningConfigForTests(
 	settings *simulator.LoadSettingsConfig,
-	conditionalProb filter.ConditionalProbability,
+	conditionalProb reweighting.ConditionalProbability,
 ) *learning.LearningConfig {
 	implementations := &simulator.LoadImplementationsConfig{
 		Iterations:      make([]simulator.Iteration, 0),
@@ -36,10 +36,10 @@ func newSimpleLearningConfigForTests(
 	)
 	implementations.Iterations = append(implementations.Iterations, iteration)
 	objectives := make([]learning.LogLikelihood, 0)
-	logLike := &filter.ProbabilityFilterLogLikelihood{
+	logLike := &reweighting.ProbabilisticReweightingLogLikelihood{
 		Prob:       conditionalProb,
-		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
-		Statistics: &filter.Statistics{},
+		DataLink:   &reweighting.NormalDataLinkingLogLikelihood{},
+		Statistics: &reweighting.Statistics{},
 	}
 	objectives = append(objectives, logLike)
 	return &learning.LearningConfig{

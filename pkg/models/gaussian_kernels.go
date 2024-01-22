@@ -5,14 +5,14 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// ConstantGaussianProcessCovarianceKernel models a constant covariance applied
-// for all values in the GaussianProcessConditionalProbability.
-type ConstantGaussianProcessCovarianceKernel struct {
+// ConstantGaussianCovarianceKernel models a constant covariance applied
+// for all values in the GaussianConditionalProbability.
+type ConstantGaussianCovarianceKernel struct {
 	covMatrix  *mat.SymDense
 	stateWidth int
 }
 
-func (c *ConstantGaussianProcessCovarianceKernel) Configure(
+func (c *ConstantGaussianCovarianceKernel) Configure(
 	partitionIndex int,
 	settings *simulator.LoadSettingsConfig,
 ) {
@@ -21,7 +21,7 @@ func (c *ConstantGaussianProcessCovarianceKernel) Configure(
 	c.SetParams(settings.OtherParams[partitionIndex])
 }
 
-func (c *ConstantGaussianProcessCovarianceKernel) SetParams(
+func (c *ConstantGaussianCovarianceKernel) SetParams(
 	params *simulator.OtherParams,
 ) {
 	row := 0
@@ -45,7 +45,7 @@ func (c *ConstantGaussianProcessCovarianceKernel) SetParams(
 	choleskyDecomp.ToSym(c.covMatrix)
 }
 
-func (c *ConstantGaussianProcessCovarianceKernel) GetCovariance(
+func (c *ConstantGaussianCovarianceKernel) GetCovariance(
 	currentState []float64,
 	pastState []float64,
 	currentTime float64,

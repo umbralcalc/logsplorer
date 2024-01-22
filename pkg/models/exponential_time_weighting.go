@@ -6,8 +6,8 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-// ExponentialTimeWeightingConditionalProbability can be used in the probability
-// filter to learn a simple exponentially-weighted historical average value.
+// ExponentialTimeWeightingConditionalProbability can be used in the probabilistic
+// reweighting to learn a simple exponentially-weighted historical average value.
 type ExponentialTimeWeightingConditionalProbability struct {
 	timescale float64
 }

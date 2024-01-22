@@ -6,11 +6,11 @@ streaming:
   termination_condition: "&simulator.NumberOfStepsTerminationCondition{MaxNumberOfSteps: 100}"
   timestep_function: 'learning.NewMemoryTimestepFunctionFromCsv("dat/test_file.csv", 0, true)'
 objectives:
-- "&filter.ProbabilityFilterLogLikelihood{
-    Prob: &models.GaussianProcessConditionalProbability{
-      Kernel: &models.ConstantGaussianProcessCovarianceKernel{}}, 
-    DataLink: &filter.NormalDataLinkingLogLikelihood{}, 
-    Statistics: &filter.Statistics{}}"
+- "&reweighting.ProbabilisticReweightingLogLikelihood{
+    Prob: &models.GaussianConditionalProbability{
+      Kernel: &models.ConstantGaussianCovarianceKernel{}}, 
+    DataLink: &reweighting.NormalDataLinkingLogLikelihood{}, 
+    Statistics: &reweighting.Statistics{}}"
 objective_output: 'learning.NewJsonLogObjectiveOutputFunction("dat/test.log")'
 optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
     Method: &optimize.NelderMead{},

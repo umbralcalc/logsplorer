@@ -1,4 +1,4 @@
-package filter
+package reweighting
 
 import (
 	"math"
@@ -9,7 +9,7 @@ import (
 )
 
 // Statistics estimates the statistics of the empirical distribution in the
-// probability filtering algorithm.
+// probabilistic reweighting algorithm.
 // TODO: Support banded matrices to enable spatial statistics.
 type Statistics struct {
 	Mean       *mat.VecDense

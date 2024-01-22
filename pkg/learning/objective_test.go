@@ -3,7 +3,7 @@ package learning
 import (
 	"testing"
 
-	"github.com/umbralcalc/learnadex/pkg/filter"
+	"github.com/umbralcalc/learnadex/pkg/reweighting"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
@@ -63,17 +63,17 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	)
 	implementations.Iterations = append(implementations.Iterations, anotherIteration)
 	objectives := make([]LogLikelihood, 0)
-	firstObjective := &filter.ProbabilityFilterLogLikelihood{
+	firstObjective := &reweighting.ProbabilisticReweightingLogLikelihood{
 		Prob:       &dummyConditionalProbability{},
-		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
-		Statistics: &filter.Statistics{},
+		DataLink:   &reweighting.NormalDataLinkingLogLikelihood{},
+		Statistics: &reweighting.Statistics{},
 	}
 	firstObjective.Configure(0, settings)
 	objectives = append(objectives, firstObjective)
-	secondObjective := &filter.ProbabilityFilterLogLikelihood{
+	secondObjective := &reweighting.ProbabilisticReweightingLogLikelihood{
 		Prob:       &dummyConditionalProbability{},
-		DataLink:   &filter.NormalDataLinkingLogLikelihood{},
-		Statistics: &filter.Statistics{},
+		DataLink:   &reweighting.NormalDataLinkingLogLikelihood{},
+		Statistics: &reweighting.Statistics{},
 	}
 	secondObjective.Configure(1, settings)
 	objectives = append(objectives, secondObjective)

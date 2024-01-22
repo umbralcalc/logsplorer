@@ -13,10 +13,10 @@ import (
 
 const logTwoPi = 1.83788
 
-// GaussianProcessCovarianceKernel is an interface that must be implemented
+// GaussianCovarianceKernel is an interface that must be implemented
 // in order to create a covariance kernel that can be used in the
-// GaussianProcessConditionalProbability.
-type GaussianProcessCovarianceKernel interface {
+// GaussianConditionalProbability.
+type GaussianCovarianceKernel interface {
 	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	SetParams(params *simulator.OtherParams)
 	GetCovariance(
@@ -27,16 +27,16 @@ type GaussianProcessCovarianceKernel interface {
 	) *mat.SymDense
 }
 
-// GaussianProcessConditionalProbability can be used in the probability
-// filter to learn a Gaussian process kernel with a vector of means.
-type GaussianProcessConditionalProbability struct {
-	Kernel       GaussianProcessCovarianceKernel
+// GaussianConditionalProbability can be used in the probabilistic
+// reweighting to learn a Gaussian kernel with a vector of means.
+type GaussianConditionalProbability struct {
+	Kernel       GaussianCovarianceKernel
 	meansInTime  map[float64][]float64
 	initialMeans []float64
 	stateWidth   int
 }
 
-func (g *GaussianProcessConditionalProbability) Configure(
+func (g *GaussianConditionalProbability) Configure(
 	partitionIndex int,
 	settings *simulator.LoadSettingsConfig,
 ) {
@@ -72,14 +72,14 @@ func (g *GaussianProcessConditionalProbability) Configure(
 	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
-func (g *GaussianProcessConditionalProbability) SetParams(params *simulator.OtherParams) {
+func (g *GaussianConditionalProbability) SetParams(params *simulator.OtherParams) {
 	for i, time := range params.FloatParams["times_to_fit"] {
 		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%d", i)]
 	}
 	g.Kernel.SetParams(params)
 }
 
-func (g *GaussianProcessConditionalProbability) Evaluate(
+func (g *GaussianConditionalProbability) Evaluate(
 	currentState []float64,
 	pastState []float64,
 	currentTime float64,

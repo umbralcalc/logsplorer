@@ -7,14 +7,14 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-func TestGaussianProcess(t *testing.T) {
+func TestGaussian(t *testing.T) {
 	t.Run(
-		"test that the Gaussian process learning objective evaluates",
+		"test that the Gaussian learning objective evaluates",
 		func(t *testing.T) {
-			configPath := "gaussian_process_config.yaml"
+			configPath := "gaussian_config.yaml"
 			settings := simulator.NewLoadSettingsConfigFromYaml(configPath)
-			gaussianProc := &GaussianProcessConditionalProbability{
-				Kernel: &ConstantGaussianProcessCovarianceKernel{},
+			gaussianProc := &GaussianConditionalProbability{
+				Kernel: &ConstantGaussianCovarianceKernel{},
 			}
 			config := newSimpleLearningConfigForTests(settings, gaussianProc)
 			learningObjective := learning.NewLearningObjective(config)

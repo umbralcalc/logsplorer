@@ -81,7 +81,7 @@ func writeMainProgram() {
 import (
 	"fmt"
 
-	"github.com/umbralcalc/learnadex/pkg/filter"
+	"github.com/umbralcalc/learnadex/pkg/reweighting"
 	"github.com/umbralcalc/learnadex/pkg/learning"
 	"github.com/umbralcalc/learnadex/pkg/models"
 	"github.com/umbralcalc/stochadex/pkg/simulator"

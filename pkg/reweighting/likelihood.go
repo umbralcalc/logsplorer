@@ -1,11 +1,11 @@
-package filter
+package reweighting
 
 import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
 // ConditionalProbability is the interface that must be implemented in order
-// to provide a conditionaly probability for the filtering algorithm.
+// to provide a conditionaly probability for the reweighting algorithm.
 type ConditionalProbability interface {
 	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	SetParams(params *simulator.OtherParams)
@@ -32,16 +32,16 @@ func Evaluate(
 	return 1.0
 }
 
-// ProbabilityFilterLogLikelihood composes a provided data linking log-likelihood
+// ProbabilisticReweightingLogLikelihood composes a provided data linking log-likelihood
 // together with a provided conditional probability in order to implement the
-// empirical probability filter algorithm as a LogLikelihood interface type.
-type ProbabilityFilterLogLikelihood struct {
+// empirical probabilistic reweighting algorithm as a LogLikelihood interface type.
+type ProbabilisticReweightingLogLikelihood struct {
 	Prob       ConditionalProbability
 	DataLink   DataLinkingLogLikelihood
 	Statistics *Statistics
 }
 
-func (p *ProbabilityFilterLogLikelihood) Configure(
+func (p *ProbabilisticReweightingLogLikelihood) Configure(
 	partitionIndex int,
 	settings *simulator.LoadSettingsConfig,
 ) {
@@ -49,7 +49,7 @@ func (p *ProbabilityFilterLogLikelihood) Configure(
 	p.DataLink.Configure(partitionIndex, settings)
 }
 
-func (p *ProbabilityFilterLogLikelihood) Evaluate(
+func (p *ProbabilisticReweightingLogLikelihood) Evaluate(
 	params *simulator.OtherParams,
 	partitionIndex int,
 	stateHistories []*simulator.StateHistory,

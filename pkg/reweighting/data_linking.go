@@ -1,4 +1,4 @@
-package filter
+package reweighting
 
 import (
 	"math"
@@ -11,7 +11,7 @@ import (
 
 // DataLinkingLogLikelihood is the interface that must be implemented in
 // order to create a likelihood that connects derived statistics from the
-// probability filter to observed actual data values.
+// probabilistic reweighting to observed actual data values.
 type DataLinkingLogLikelihood interface {
 	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
 	Evaluate(statistics *Statistics, data []float64) float64
@@ -19,7 +19,7 @@ type DataLinkingLogLikelihood interface {
 }
 
 // NormalDataLinkingLogLikelihood assumes the real data are well described
-// by a normal distribution, given the statistics provided by the filter.
+// by a normal distribution, given the statistics provided by the reweighting.
 type NormalDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -65,7 +65,7 @@ func (n *NormalDataLinkingLogLikelihood) GenerateNewSamples(
 }
 
 // GammaDataLinkingLogLikelihood assumes the real data are well described
-// by a gamma distribution, given the statistics provided by the filter.
+// by a gamma distribution, given the statistics provided by the reweighting.
 type GammaDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -109,7 +109,7 @@ func (g *GammaDataLinkingLogLikelihood) GenerateNewSamples(
 }
 
 // PoissonDataLinkingLogLikelihood assumes the real data are well described
-// by a Poisson distribution, given the statistics provided by the filter.
+// by a Poisson distribution, given the statistics provided by the reweighting.
 type PoissonDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
@@ -150,7 +150,7 @@ func (p *PoissonDataLinkingLogLikelihood) GenerateNewSamples(
 
 // NegativeBinomialDataLinkingLogLikelihood assumes the real data are well
 // described by a negative binomial distribution, given the statistics
-// provided by the filter.
+// provided by the reweighting.
 type NegativeBinomialDataLinkingLogLikelihood struct {
 	Src rand.Source
 }
