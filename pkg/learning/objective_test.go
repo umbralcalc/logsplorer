@@ -40,7 +40,7 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
-			MaxNumberOfSteps: 100,
+			MaxNumberOfSteps: 99,
 		},
 		TimestepFunction: NewMemoryTimestepFunctionFromCsv(
 			"test_file.csv",
@@ -85,13 +85,13 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	}
 }
 
-func TestLearningObjective(t *testing.T) {
+func TestObjectiveEvaluator(t *testing.T) {
 	t.Run(
-		"test that the learning objective runs",
+		"test that the learning objective evaluator runs",
 		func(t *testing.T) {
 			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
 			config := newLearningConfigForTests(settings)
-			learningObjective := NewLearningObjective(config)
+			learningObjective := NewObjectiveEvaluator(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

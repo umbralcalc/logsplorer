@@ -17,7 +17,7 @@ func TestGaussian(t *testing.T) {
 				Kernel: &ConstantGaussianCovarianceKernel{},
 			}
 			config := newSimpleLearningConfigForTests(settings, gaussianProc)
-			learningObjective := learning.NewLearningObjective(config)
+			learningObjective := learning.NewObjectiveEvaluator(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

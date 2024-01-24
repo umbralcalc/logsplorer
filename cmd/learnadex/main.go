@@ -107,7 +107,7 @@ func main() {
 		Optimiser: {{.Algorithm}},
 	}
 	params := config.Optimiser.Run(
-		learning.NewLearningObjective(config.Learning),
+		learning.NewObjectiveEvaluator(config.Learning),
 		settings.OtherParams,
 	)
 	for i, p := range params {

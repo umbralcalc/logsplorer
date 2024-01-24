@@ -28,7 +28,12 @@ func (m *MemoryIteration) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	return m.Data[timestepsHistory.Values.AtVec(0)]
+	nextTime := timestepsHistory.Values.AtVec(0) + timestepsHistory.NextIncrement
+	dat, ok := m.Data[nextTime]
+	if !ok {
+		panic("no step in MemoryIteration for time " + fmt.Sprintf("%f", nextTime))
+	}
+	return dat
 }
 
 // NewMemoryIterationFromCsv creates a new MemoryIteration based on data

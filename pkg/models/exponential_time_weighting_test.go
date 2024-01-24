@@ -20,7 +20,7 @@ func newSimpleLearningConfigForTests(
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
-			MaxNumberOfSteps: 100,
+			MaxNumberOfSteps: 99,
 		},
 		TimestepFunction: learning.NewMemoryTimestepFunctionFromCsv(
 			"test_file.csv",
@@ -60,7 +60,7 @@ func TestExponentialTimeWeighting(t *testing.T) {
 				settings,
 				&ExponentialTimeWeightingConditionalProbability{},
 			)
-			learningObjective := learning.NewLearningObjective(config)
+			learningObjective := learning.NewObjectiveEvaluator(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

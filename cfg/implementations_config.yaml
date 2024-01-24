@@ -3,7 +3,7 @@ streaming:
   - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", 0, []int{1, 2, 3}, true)'
   output_condition: "&simulator.NilOutputCondition{}"
   output_function: "&simulator.NilOutputFunction{}"
-  termination_condition: "&simulator.NumberOfStepsTerminationCondition{MaxNumberOfSteps: 100}"
+  termination_condition: "&simulator.NumberOfStepsTerminationCondition{MaxNumberOfSteps: 99}"
   timestep_function: 'learning.NewMemoryTimestepFunctionFromCsv("dat/test_file.csv", 0, true)'
 objectives:
 - "&reweighting.ProbabilisticReweightingLogLikelihood{
