@@ -7,7 +7,7 @@ import (
 // ConditionalProbability is the interface that must be implemented in order
 // to provide a conditionaly probability for the reweighting algorithm.
 type ConditionalProbability interface {
-	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
+	Configure(partitionIndex int, settings *simulator.Settings)
 	SetParams(params *simulator.OtherParams)
 	Evaluate(
 		currentState []float64,
@@ -43,7 +43,7 @@ type ProbabilisticReweightingLogLikelihood struct {
 
 func (p *ProbabilisticReweightingLogLikelihood) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	p.Prob.Configure(partitionIndex, settings)
 	p.DataLink.Configure(partitionIndex, settings)

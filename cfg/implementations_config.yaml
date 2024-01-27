@@ -1,17 +1,32 @@
-streaming:
+simulator: 
   iterations:
   - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", 0, []int{1, 2, 3}, true)'
+  - "learning.NewOnlineLearningIteration(learningConfig)"
   output_condition: "&simulator.NilOutputCondition{}"
   output_function: "&simulator.NilOutputFunction{}"
   termination_condition: "&simulator.NumberOfStepsTerminationCondition{MaxNumberOfSteps: 99}"
   timestep_function: 'learning.NewMemoryTimestepFunctionFromCsv("dat/test_file.csv", 0, true)'
-objectives:
-- "&reweighting.ProbabilisticReweightingLogLikelihood{
-    Prob: &models.GaussianConditionalProbability{
-      Kernel: &models.ConstantGaussianCovarianceKernel{}}, 
-    DataLink: &reweighting.NormalDataLinkingLogLikelihood{}, 
-    Statistics: &reweighting.Statistics{}}"
-objective_output: 'learning.NewJsonLogObjectiveOutputFunction("dat/test.log")'
-optimisation_algorithm: "&learning.GonumOptimisationAlgorithm{
-    Method: &optimize.NelderMead{},
-    Settings: &optimize.Settings{Concurrent: 10}}"
+extra_vars_by_package:
+  - github.com/umbralcalc/learnadex/pkg/models:
+      - kernel: "&models.ConstantGaussianCovarianceKernel{}"
+      - conditionalProb: "&models.GaussianConditionalProbability{Kernel: kernel}"
+  - github.com/umbralcalc/learnadex/pkg/reweighting:
+      - stats: "&reweighting.Statistics{}"
+      - dataLink: "&reweighting.NormalDataLinkingLogLikelihood{}"
+      - reweightingObj: "&reweighting.ProbabilisticReweightingLogLikelihood{
+          Prob: conditionalProb, 
+          DataLink: dataLink,
+          Statistics: stats}"
+  - gonum.org/v1/gonum/optimize:
+      - optimizeMethod: "&optimize.NelderMead{}"
+      - optimizeSettings: "&optimize.Settings{Concurrent: 10}"
+  - github.com/umbralcalc/learnadex/pkg/learning:
+      - objectives: "[]learning.LogLikelihood{reweightingObj}"
+      - objectiveOutput: 'learning.NewJsonLogObjectiveOutputFunction("dat/test.log")'
+      - optimisationAlgorithm: "&learning.GonumOptimisationAlgorithm{
+          Method: optimizeMethod,
+          Settings: optimizeSettings}"
+      - learningConfig: "&learning.LearningConfig{Objectives: objectives, 
+	        ObjectiveOutput: objectiveOutput,
+	        Optimiser: optimisationAlgorithm}"
+  

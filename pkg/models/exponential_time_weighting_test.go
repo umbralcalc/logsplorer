@@ -8,14 +8,15 @@ import (
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
-// newSimpleLearningConfigForTests creates a learning config with a single
-// normally-distributed data linking log-likelihood, standard covariance
-// statistics and loads a data streamer from the test_file.csv for testing.
-func newSimpleLearningConfigForTests(
-	settings *simulator.LoadSettingsConfig,
+// newImplementationsAndSimpleLearningConfigForTests creates an implementations
+// config which loads a data streamer from the test_file.csv for testing and a
+// simple learning config with a single normally-distributed data linking
+// log-likelihooda and standard covariance statistics.
+func newImplementationsAndSimpleLearningConfigForTests(
+	settings *simulator.Settings,
 	conditionalProb reweighting.ConditionalProbability,
-) *learning.LearningConfig {
-	implementations := &simulator.LoadImplementationsConfig{
+) (*simulator.Implementations, *learning.LearningConfig) {
+	implementations := &simulator.Implementations{
 		Iterations:      make([]simulator.Iteration, 0),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
@@ -42,11 +43,9 @@ func newSimpleLearningConfigForTests(
 		Statistics: &reweighting.Statistics{},
 	}
 	objectives = append(objectives, logLike)
-	return &learning.LearningConfig{
-		Streaming:         implementations,
-		StreamingSettings: settings,
-		Objectives:        objectives,
-		ObjectiveOutput:   &learning.NilObjectiveOutputFunction{},
+	return implementations, &learning.LearningConfig{
+		Objectives:      objectives,
+		ObjectiveOutput: &learning.NilObjectiveOutputFunction{},
 	}
 }
 
@@ -55,12 +54,17 @@ func TestExponentialTimeWeighting(t *testing.T) {
 		"test that the exponential time weighting learning objective evaluates",
 		func(t *testing.T) {
 			configPath := "exponential_time_weighting_config.yaml"
-			settings := simulator.NewLoadSettingsConfigFromYaml(configPath)
-			config := newSimpleLearningConfigForTests(
+			settings := simulator.LoadSettingsFromYaml(configPath)
+			implementations, config :=
+				newImplementationsAndSimpleLearningConfigForTests(
+					settings,
+					&ExponentialTimeWeightingConditionalProbability{},
+				)
+			learningObjective := learning.NewObjectiveEvaluator(
+				implementations,
 				settings,
-				&ExponentialTimeWeightingConditionalProbability{},
+				config,
 			)
-			learningObjective := learning.NewObjectiveEvaluator(config)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

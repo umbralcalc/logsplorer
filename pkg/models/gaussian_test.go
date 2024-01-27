@@ -12,12 +12,20 @@ func TestGaussian(t *testing.T) {
 		"test that the Gaussian learning objective evaluates",
 		func(t *testing.T) {
 			configPath := "gaussian_config.yaml"
-			settings := simulator.NewLoadSettingsConfigFromYaml(configPath)
+			settings := simulator.LoadSettingsFromYaml(configPath)
 			gaussianProc := &GaussianConditionalProbability{
 				Kernel: &ConstantGaussianCovarianceKernel{},
 			}
-			config := newSimpleLearningConfigForTests(settings, gaussianProc)
-			learningObjective := learning.NewObjectiveEvaluator(config)
+			implementations, config :=
+				newImplementationsAndSimpleLearningConfigForTests(
+					settings,
+					gaussianProc,
+				)
+			learningObjective := learning.NewObjectiveEvaluator(
+				implementations,
+				settings,
+				config,
+			)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

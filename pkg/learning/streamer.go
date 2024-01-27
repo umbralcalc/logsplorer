@@ -18,7 +18,7 @@ type MemoryIteration struct {
 
 func (m *MemoryIteration) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 }
 

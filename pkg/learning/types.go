@@ -1,21 +1,9 @@
 package learning
 
-import (
-	"github.com/umbralcalc/stochadex/pkg/simulator"
-)
-
-// LearningConfig specifies how data is streamed into each partitioned
-// objective function and what each objective function is.
+// LearningConfig specifies the learning objectives for each partitioned
+// objective function and how the objective values can be output.
 type LearningConfig struct {
-	Streaming         *simulator.LoadImplementationsConfig
-	StreamingSettings *simulator.LoadSettingsConfig
-	Objectives        []LogLikelihood
-	ObjectiveOutput   ObjectiveOutputFunction
-}
-
-// LearnadexConfig fully configures a learning problem configured for
-// the learnadex.
-type LearnadexConfig struct {
-	Learning  *LearningConfig
-	Optimiser OptimisationAlgorithm
+	Objectives      []LogLikelihood
+	ObjectiveOutput ObjectiveOutputFunction
+	Optimiser       OptimisationAlgorithm
 }

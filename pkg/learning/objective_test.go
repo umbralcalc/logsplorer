@@ -14,7 +14,7 @@ type dummyConditionalProbability struct {
 
 func (d *dummyConditionalProbability) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	d.value = settings.OtherParams[partitionIndex].FloatParams["dummy_value"][0]
 }
@@ -34,8 +34,10 @@ func (d *dummyConditionalProbability) Evaluate(
 	return d.value
 }
 
-func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *LearningConfig {
-	implementations := &simulator.LoadImplementationsConfig{
+func newImplementationsAndLearningConfigForTests(
+	settings *simulator.Settings,
+) (*simulator.Implementations, *LearningConfig) {
+	implementations := &simulator.Implementations{
 		Iterations:      make([]simulator.Iteration, 0),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
@@ -77,11 +79,9 @@ func newLearningConfigForTests(settings *simulator.LoadSettingsConfig) *Learning
 	}
 	secondObjective.Configure(1, settings)
 	objectives = append(objectives, secondObjective)
-	return &LearningConfig{
-		Streaming:         implementations,
-		StreamingSettings: settings,
-		Objectives:        objectives,
-		ObjectiveOutput:   &NilObjectiveOutputFunction{},
+	return implementations, &LearningConfig{
+		Objectives:      objectives,
+		ObjectiveOutput: &NilObjectiveOutputFunction{},
 	}
 }
 
@@ -89,9 +89,15 @@ func TestObjectiveEvaluator(t *testing.T) {
 	t.Run(
 		"test that the learning objective evaluator runs",
 		func(t *testing.T) {
-			settings := simulator.NewLoadSettingsConfigFromYaml("test_config.yaml")
-			config := newLearningConfigForTests(settings)
-			learningObjective := NewObjectiveEvaluator(config)
+			settings := simulator.LoadSettingsFromYaml("test_config.yaml")
+			implementations, config := newImplementationsAndLearningConfigForTests(
+				settings,
+			)
+			learningObjective := NewObjectiveEvaluator(
+				implementations,
+				settings,
+				config,
+			)
 			_ = learningObjective.Evaluate(settings.OtherParams)
 		},
 	)

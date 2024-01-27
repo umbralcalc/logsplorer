@@ -13,7 +13,7 @@ import (
 // order to create a likelihood that connects derived statistics from the
 // probabilistic reweighting to observed actual data values.
 type DataLinkingLogLikelihood interface {
-	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
+	Configure(partitionIndex int, settings *simulator.Settings)
 	Evaluate(statistics *Statistics, data []float64) float64
 	GenerateNewSamples(statistics *Statistics) []float64
 }
@@ -26,7 +26,7 @@ type NormalDataLinkingLogLikelihood struct {
 
 func (n *NormalDataLinkingLogLikelihood) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	n.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }
@@ -72,7 +72,7 @@ type GammaDataLinkingLogLikelihood struct {
 
 func (g *GammaDataLinkingLogLikelihood) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	g.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }
@@ -116,7 +116,7 @@ type PoissonDataLinkingLogLikelihood struct {
 
 func (p *PoissonDataLinkingLogLikelihood) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	p.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }
@@ -157,7 +157,7 @@ type NegativeBinomialDataLinkingLogLikelihood struct {
 
 func (n *NegativeBinomialDataLinkingLogLikelihood) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	n.Src = rand.NewSource(settings.Seeds[partitionIndex])
 }

@@ -14,7 +14,7 @@ type ExponentialTimeWeightingConditionalProbability struct {
 
 func (e *ExponentialTimeWeightingConditionalProbability) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 }
 

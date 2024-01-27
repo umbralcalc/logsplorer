@@ -1,14 +1,11 @@
 package models
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/umbralcalc/stochadex/pkg/simulator"
-	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
-	"gonum.org/v1/gonum/stat/distuv"
 )
 
 const logTwoPi = 1.83788
@@ -17,7 +14,7 @@ const logTwoPi = 1.83788
 // in order to create a covariance kernel that can be used in the
 // GaussianConditionalProbability.
 type GaussianCovarianceKernel interface {
-	Configure(partitionIndex int, settings *simulator.LoadSettingsConfig)
+	Configure(partitionIndex int, settings *simulator.Settings)
 	SetParams(params *simulator.OtherParams)
 	GetCovariance(
 		currentState []float64,
@@ -30,52 +27,22 @@ type GaussianCovarianceKernel interface {
 // GaussianConditionalProbability can be used in the probabilistic
 // reweighting to learn a Gaussian kernel with a vector of means.
 type GaussianConditionalProbability struct {
-	Kernel       GaussianCovarianceKernel
-	meansInTime  map[float64][]float64
-	initialMeans []float64
-	stateWidth   int
+	Kernel     GaussianCovarianceKernel
+	means      []float64
+	stateWidth int
 }
 
 func (g *GaussianConditionalProbability) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	g.Kernel.Configure(partitionIndex, settings)
-	g.meansInTime = make(map[float64][]float64)
-	g.initialMeans = settings.OtherParams[partitionIndex].FloatParams["initial_means"]
 	g.stateWidth = settings.StateWidths[partitionIndex]
-	affirmativeMask := make([]bool, 0)
-	for range g.initialMeans {
-		affirmativeMask = append(affirmativeMask, true)
-	}
-	uniformDist := &distuv.Uniform{
-		Min: -1e-4,
-		Max: 1e-4,
-		Src: rand.NewSource(settings.Seeds[partitionIndex]),
-	}
-	for i, time := range settings.OtherParams[partitionIndex].FloatParams["times_to_fit"] {
-		_, ok := g.meansInTime[time]
-		if !ok {
-			g.meansInTime[time] = g.initialMeans
-		}
-		// populate new fields to make the initial inputs for the user much more manageable
-		initVals := make([]float64, 0)
-		for _, mean := range g.meansInTime[time] {
-			// add a little noise to each value at initialisation
-			initVals = append(initVals, mean+uniformDist.Rand())
-		}
-		settings.OtherParams[partitionIndex].
-			FloatParams[fmt.Sprintf("means_at_time_%d", i)] = initVals
-		settings.OtherParams[partitionIndex].
-			FloatParamsMask[fmt.Sprintf("means_at_time_%d", i)] = affirmativeMask
-	}
 	g.SetParams(settings.OtherParams[partitionIndex])
 }
 
 func (g *GaussianConditionalProbability) SetParams(params *simulator.OtherParams) {
-	for i, time := range params.FloatParams["times_to_fit"] {
-		g.meansInTime[time] = params.FloatParams[fmt.Sprintf("means_at_time_%d", i)]
-	}
+	g.means = params.FloatParams["means"]
 	g.Kernel.SetParams(params)
 }
 
@@ -85,26 +52,18 @@ func (g *GaussianConditionalProbability) Evaluate(
 	currentTime float64,
 	pastTime float64,
 ) float64 {
-	_, ok := g.meansInTime[pastTime]
-	if !ok {
-		g.meansInTime[pastTime] = g.initialMeans
-	}
-	_, ok = g.meansInTime[currentTime]
-	if !ok {
-		g.meansInTime[currentTime] = g.initialMeans
-	}
 	currentDiff := make([]float64, g.stateWidth)
 	pastDiff := make([]float64, g.stateWidth)
 	currentStateDiffVector := mat.NewVecDense(
 		g.stateWidth,
-		floats.SubTo(currentDiff, currentState, g.meansInTime[currentTime]),
+		floats.SubTo(currentDiff, currentState, g.means),
 	)
 	pastStateDiffVector := mat.NewVecDense(
 		g.stateWidth,
-		floats.SubTo(pastDiff, pastState, g.meansInTime[pastTime]),
+		floats.SubTo(pastDiff, pastState, g.means),
 	)
 	var choleskyDecomp mat.Cholesky
-	ok = choleskyDecomp.Factorize(
+	ok := choleskyDecomp.Factorize(
 		g.Kernel.GetCovariance(currentState, pastState, currentTime, pastTime),
 	)
 	if !ok {

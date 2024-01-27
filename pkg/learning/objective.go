@@ -11,8 +11,8 @@ type ObjectiveEvaluator struct {
 	Iterations      []*IterationWithObjective
 	OutputFunction  ObjectiveOutputFunction
 	config          *LearningConfig
-	settings        *simulator.LoadSettingsConfig
-	implementations *simulator.LoadImplementationsConfig
+	settings        *simulator.Settings
+	implementations *simulator.Implementations
 }
 
 func (o *ObjectiveEvaluator) Evaluate(
@@ -25,7 +25,7 @@ func (o *ObjectiveEvaluator) Evaluate(
 
 	// instantiate a new batch of data iterators via the stochadex
 	coordinator := simulator.NewPartitionCoordinator(
-		simulator.NewStochadexConfig(o.settings, o.implementations),
+		o.settings, o.implementations,
 	)
 
 	// run the iterations over the data
@@ -57,7 +57,7 @@ func (o *ObjectiveEvaluator) Copy() *ObjectiveEvaluator {
 }
 
 func (o *ObjectiveEvaluator) ResetIterations(
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	for i, iteration := range o.Iterations {
 		iteration.Configure(i, settings)
@@ -65,23 +65,28 @@ func (o *ObjectiveEvaluator) ResetIterations(
 }
 
 // NewObjectiveEvaluator creates a new ObjectiveEvaluator struct
-// given a config and loaded settings.
-func NewObjectiveEvaluator(config *LearningConfig) *ObjectiveEvaluator {
+// given some streaming implementations and settings, plus a learning
+// config to set the objectives and optimisation algorithm.
+func NewObjectiveEvaluator(
+	implementations *simulator.Implementations,
+	settings *simulator.Settings,
+	config *LearningConfig,
+) *ObjectiveEvaluator {
 	dataIterations := make([]*IterationWithObjective, 0)
 	for i, objective := range config.Objectives {
 		iteration := &IterationWithObjective{
 			logLikelihood: objective,
-			iteration:     config.Streaming.Iterations[i],
+			iteration:     implementations.Iterations[i],
 		}
-		iteration.Configure(i, config.StreamingSettings)
+		iteration.Configure(i, settings)
 		dataIterations = append(dataIterations, iteration)
-		config.Streaming.Iterations[i] = iteration
+		implementations.Iterations[i] = iteration
 	}
 	return &ObjectiveEvaluator{
 		Iterations:      dataIterations,
 		OutputFunction:  config.ObjectiveOutput,
 		config:          config,
-		settings:        config.StreamingSettings,
-		implementations: config.Streaming,
+		settings:        settings,
+		implementations: implementations,
 	}
 }

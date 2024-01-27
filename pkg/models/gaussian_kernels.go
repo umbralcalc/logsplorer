@@ -14,7 +14,7 @@ type ConstantGaussianCovarianceKernel struct {
 
 func (c *ConstantGaussianCovarianceKernel) Configure(
 	partitionIndex int,
-	settings *simulator.LoadSettingsConfig,
+	settings *simulator.Settings,
 ) {
 	c.stateWidth = settings.StateWidths[partitionIndex]
 	c.covMatrix = mat.NewSymDense(c.stateWidth, nil)
