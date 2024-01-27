@@ -3,8 +3,7 @@ other_params:
     exponential_weighting_timescale: [1.0]
   float_params_mask:
     exponential_weighting_timescale: [true]
-  int_params:
-    burn_in_steps: [5]
+  int_params: {}
 init_state_values:
 - [0.0, 0.0, 0.0]
 init_time_value: 0.0

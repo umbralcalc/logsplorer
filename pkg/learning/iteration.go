@@ -33,9 +33,7 @@ func (i *IterationWithObjective) Configure(
 	settings *simulator.Settings,
 ) {
 	i.logLikelihood.Configure(partitionIndex, settings)
-	i.burnInSteps = int(
-		settings.OtherParams[partitionIndex].IntParams["burn_in_steps"][0],
-	)
+	i.burnInSteps = settings.StateHistoryDepths[partitionIndex]
 	i.cumulativeLogLikelihood = 0.0
 	i.stepsTaken = 0
 }

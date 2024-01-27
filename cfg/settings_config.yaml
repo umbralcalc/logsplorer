@@ -1,12 +1,11 @@
 other_params:
 - float_params:
-    means: [0.0, -5.0, 0.0]
+    means: [0.0, 0.0, 0.0]
     upper_triangle_cholesky_of_cov_matrix: [3.0, 0.0, 0.0, 3.0, 0.0, 3.0]
   float_params_mask:
     means: [true, true, true]
     upper_triangle_cholesky_of_cov_matrix: [true, false, false, true, false, true]
-  int_params:
-    burn_in_steps: [10]
+  int_params: {}
 - float_params: {}
   int_params:
     streamer_partition_indices: [0]
@@ -17,5 +16,5 @@ init_state_values:
 init_time_value: 0.0
 seeds: [22113355, 234]
 state_widths: [3, 6]
-state_history_depths: [10, 10]
-timesteps_history_depth: 10
+state_history_depths: [50, 10]
+timesteps_history_depth: 30

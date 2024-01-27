@@ -5,8 +5,7 @@ other_params:
   float_params_mask:
     means: [true, true, true]
     upper_triangle_cholesky_of_cov_matrix: [true, true, true, true, true, true]
-  int_params:
-    burn_in_steps: [5]
+  int_params: {}
 init_state_values:
 - [0.0, 0.0, 0.0]
 init_time_value: 0.0
