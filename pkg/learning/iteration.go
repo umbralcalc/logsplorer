@@ -170,8 +170,10 @@ func (o *OnlineLearningIteration) Iterate(
 			),
 		)
 	}
-	windowLength :=
-		stateHistories[partitionIndex].StateHistoryDepth
+	if timestepsHistory.CurrentStepNumber%o.refitSteps != 0 {
+		return stateHistories[partitionIndex].Values.RawRowView(0)
+	}
+	windowLength := stateHistories[partitionIndex].StateHistoryDepth
 	learnerStreamImplementations := &simulator.Implementations{
 		Iterations: make(
 			[]simulator.Iteration,
@@ -196,9 +198,6 @@ func (o *OnlineLearningIteration) Iterate(
 		&MemoryTimestepFunction{Data: timestepsHistory}
 	o.learnerStreamSettings.InitTimeValue =
 		timestepsHistory.Values.AtVec(windowLength - 1)
-	if timestepsHistory.CurrentStepNumber%o.refitSteps != 0 {
-		return stateHistories[partitionIndex].Values.RawRowView(0)
-	}
 	newParamValues := o.config.Optimiser.Run(
 		NewObjectiveEvaluator(
 			learnerStreamImplementations,

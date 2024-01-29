@@ -143,17 +143,18 @@ func readLogEntries(
 			case "partition_iterations":
 				if filter.Ignore(float64(partitionIterations[logEntry.PartitionIndex])) {
 					include = false
-					break
+				}
+			case "time":
+				if filter.Ignore(logEntry.Time) {
+					include = false
 				}
 			case "partition_index":
 				if filter.Ignore(float64(logEntry.PartitionIndex)) {
 					include = false
-					break
 				}
 			case "objective":
 				if filter.Ignore(logEntry.Objective) {
 					include = false
-					break
 				}
 			default:
 				_, ok := logEntry.FloatParams[param]
@@ -234,7 +235,7 @@ func LogsplorerArgParse() *LogsplorerConfig {
 		fmt.Print(parser.Usage(err))
 	}
 	if *configFile == "" {
-		panic(fmt.Errorf("Parsed no config file"))
+		panic(fmt.Errorf("parsed no config file"))
 	}
 	yamlFile, err := os.ReadFile(*configFile)
 	if err != nil {

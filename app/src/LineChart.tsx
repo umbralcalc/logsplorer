@@ -12,6 +12,7 @@ interface IntParams {
 
 interface JsonLogEntry {
   partition_index: number;
+  time: number;
   objective: number;
   float_params: FloatParams;
   int_params: IntParams;

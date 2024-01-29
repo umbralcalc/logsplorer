@@ -12,7 +12,12 @@ import (
 // ObjectiveOutputFunction is the interface that must be implemented for outputting
 // data from the LearningObjective.
 type ObjectiveOutputFunction interface {
-	Output(partitionIndex int, objective float64, params *simulator.OtherParams)
+	Output(
+		partitionIndex int,
+		time float64,
+		objective float64,
+		params *simulator.OtherParams,
+	)
 }
 
 // NilObjectiveOutputFunction outputs nothing from the LearningObjective.
@@ -20,6 +25,7 @@ type NilObjectiveOutputFunction struct{}
 
 func (n *NilObjectiveOutputFunction) Output(
 	partitionIndex int,
+	time float64,
 	objective float64,
 	params *simulator.OtherParams,
 ) {
@@ -31,16 +37,18 @@ type StdoutObjectiveOutputFunction struct{}
 
 func (s *StdoutObjectiveOutputFunction) Output(
 	partitionIndex int,
+	time float64,
 	objective float64,
 	params *simulator.OtherParams,
 ) {
-	fmt.Println(partitionIndex, objective, params)
+	fmt.Println(partitionIndex, time, objective, params)
 }
 
 // JsonLogEntry is the format in which the logs are serialised when using the
 // JsonLogObjectiveOutputFunction.
 type JsonLogEntry struct {
 	PartitionIndex int                  `json:"partition_index"`
+	Time           float64              `json:"time"`
 	Objective      float64              `json:"objective"`
 	FloatParams    map[string][]float64 `json:"float_params"`
 	IntParams      map[string][]int64   `json:"int_params"`
@@ -54,11 +62,13 @@ type JsonLogObjectiveOutputFunction struct {
 
 func (j *JsonLogObjectiveOutputFunction) Output(
 	partitionIndex int,
+	time float64,
 	objective float64,
 	params *simulator.OtherParams,
 ) {
 	logEntry := JsonLogEntry{
 		PartitionIndex: partitionIndex,
+		Time:           time,
 		Objective:      objective,
 		FloatParams:    params.FloatParams,
 		IntParams:      params.IntParams,

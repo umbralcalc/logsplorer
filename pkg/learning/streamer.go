@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/umbralcalc/stochadex/pkg/simulator"
+	"golang.org/x/exp/slices"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -29,7 +30,9 @@ func (m *MemoryIteration) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	return m.Data.Values.RawRowView(timestepsHistory.CurrentStepNumber - 1)
+	data := m.Data.Values.RawRowView(m.Data.StateHistoryDepth -
+		timestepsHistory.CurrentStepNumber)
+	return data
 }
 
 // NewMemoryIterationFromCsv creates a new MemoryIteration based on data
@@ -79,6 +82,9 @@ func NewMemoryIterationFromCsv(
 		data = append(data, floatRow...)
 		timeSeriesLength += 1
 	}
+	// default is to have the same index ordering as for a windowed
+	// history so that row 0 is the last point
+	slices.Reverse(data)
 	return &MemoryIteration{
 		Data: &simulator.StateHistory{
 			Values: mat.NewDense(
@@ -101,9 +107,9 @@ type MemoryTimestepFunction struct {
 func (m *MemoryTimestepFunction) SetNextIncrement(
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) *simulator.CumulativeTimestepsHistory {
-	i := timestepsHistory.CurrentStepNumber
+	i := m.Data.StateHistoryDepth - timestepsHistory.CurrentStepNumber
 	timestepsHistory.NextIncrement =
-		m.Data.Values.AtVec(i) - m.Data.Values.AtVec(i-1)
+		m.Data.Values.AtVec(i-1) - m.Data.Values.AtVec(i)
 	return timestepsHistory
 }
 
@@ -138,6 +144,9 @@ func NewMemoryTimestepFunctionFromCsv(
 		}
 		times = append(times, time)
 	}
+	// default is to have the same index ordering as for a windowed
+	// history so that row 0 is the last point
+	slices.Reverse(times)
 	return &MemoryTimestepFunction{
 		Data: &simulator.CumulativeTimestepsHistory{
 			Values:            mat.NewVecDense(len(times), times),

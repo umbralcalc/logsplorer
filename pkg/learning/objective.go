@@ -38,6 +38,7 @@ func (o *ObjectiveEvaluator) Evaluate(
 		partitionObjective := iteration.GetObjective()
 		o.OutputFunction.Output(
 			partitionIndex,
+			coordinator.TimestepsHistory.Values.AtVec(0),
 			partitionObjective,
 			newParams[partitionIndex],
 		)
