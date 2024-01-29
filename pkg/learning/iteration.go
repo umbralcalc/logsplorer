@@ -25,7 +25,6 @@ type IterationWithObjective struct {
 	iteration               simulator.Iteration
 	cumulativeLogLikelihood float64
 	burnInSteps             int
-	stepsTaken              int
 }
 
 func (i *IterationWithObjective) Configure(
@@ -35,7 +34,6 @@ func (i *IterationWithObjective) Configure(
 	i.logLikelihood.Configure(partitionIndex, settings)
 	i.burnInSteps = settings.StateHistoryDepths[partitionIndex]
 	i.cumulativeLogLikelihood = 0.0
-	i.stepsTaken = 0
 }
 
 func (i *IterationWithObjective) Iterate(
@@ -44,8 +42,7 @@ func (i *IterationWithObjective) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	i.stepsTaken += 1
-	if i.stepsTaken <= i.burnInSteps {
+	if timestepsHistory.CurrentStepNumber <= i.burnInSteps {
 		return i.iteration.Iterate(
 			params,
 			partitionIndex,
@@ -71,20 +68,6 @@ func (i *IterationWithObjective) Iterate(
 // through the data and applying the LogLikehood.Evaluate method.
 func (i *IterationWithObjective) GetObjective() float64 {
 	return i.cumulativeLogLikelihood
-}
-
-func minKey(m map[float64][]float64) float64 {
-	var min float64
-	for k := range m {
-		min = k
-		break
-	}
-	for k := range m {
-		if k < min {
-			min = k
-		}
-	}
-	return min
 }
 
 func copySettingsForPartitions(
@@ -124,64 +107,51 @@ func copySettingsForPartitions(
 // successive parameter values and rerunning the optimiser over the specified
 // streaming window every 'refitSteps' number of steps.
 type OnlineLearningIteration struct {
-	config                  *LearningConfig
-	streamerImplementations *simulator.Implementations
-	streamerSettings        *simulator.Settings
-	streamerMappings        *OptimiserParamsMappings
-	streamerIndices         []int
-	windowIterations        []*MemoryIteration
-	windowTimesteps         *MemoryTimestepFunction
-	windowEdgeTimes         []float64
-	windowSize              int
-	refitSteps              int
-	stepsTaken              int
+	config                *LearningConfig
+	learnerStreamSettings *simulator.Settings
+	learnerStreamMappings *OptimiserParamsMappings
+	learnerStreamIndices  []int
+	refitSteps            int
 }
 
 func (o *OnlineLearningIteration) Configure(
 	partitionIndex int,
 	settings *simulator.Settings,
 ) {
-	o.streamerIndices = make([]int, 0)
-	o.windowEdgeTimes = make([]float64, 0)
-	o.windowIterations = make([]*MemoryIteration, 0)
+	o.learnerStreamIndices = make([]int, 0)
+	learnerHistoryDepths := make([]int, 0)
+	var windowLength int
 	for i, index := range settings.OtherParams[partitionIndex].
 		IntParams["streamer_partition_indices"] {
 		if i == 0 {
-			o.windowSize = settings.StateHistoryDepths[index]
-		} else {
-			if o.windowSize != settings.StateHistoryDepths[index] {
-				panic("state_history_depth for streamers must all " +
-					"be the same when using online learning")
-			}
+			windowLength = settings.StateHistoryDepths[index]
 		}
-		o.streamerIndices = append(o.streamerIndices, int(index))
-		o.windowEdgeTimes = append(o.windowEdgeTimes, 0.0)
-		o.windowIterations = append(
-			o.windowIterations,
-			&MemoryIteration{Data: make(map[float64][]float64)},
+		if (windowLength != settings.StateHistoryDepths[index]) ||
+			(settings.StateHistoryDepths[index] !=
+				settings.StateHistoryDepths[partitionIndex]) {
+			panic("all state history depths for " +
+				"streamer_partition_indices must be the same" +
+				"as for the online learning iteration - " +
+				"use the 'learner_history_depths' parameter if " +
+				"you want to vary each learner's window size")
+		}
+		o.learnerStreamIndices = append(o.learnerStreamIndices, int(index))
+		learnerHistoryDepths = append(
+			learnerHistoryDepths,
+			int(settings.OtherParams[partitionIndex].
+				IntParams["learner_history_depths"][i]),
 		)
 	}
-	o.windowTimesteps = &MemoryTimestepFunction{
-		NextIncrements: make(map[float64]float64),
-	}
-	o.streamerImplementations = &simulator.Implementations{
-		Iterations: make(
-			[]simulator.Iteration,
-			len(o.streamerIndices),
-		),
-		OutputCondition: &simulator.NilOutputCondition{},
-		OutputFunction:  &simulator.NilOutputFunction{},
-	}
-	o.streamerSettings = copySettingsForPartitions(
-		o.streamerIndices,
+	o.learnerStreamSettings = copySettingsForPartitions(
+		o.learnerStreamIndices,
 		settings,
 	)
-	o.streamerMappings = NewOptimiserParamsMappings(
-		o.streamerSettings.OtherParams,
+	o.learnerStreamSettings.StateHistoryDepths = learnerHistoryDepths
+	o.learnerStreamMappings = NewOptimiserParamsMappings(
+		o.learnerStreamSettings.OtherParams,
 	)
 	o.refitSteps = int(
 		settings.OtherParams[partitionIndex].IntParams["refit_steps"][0])
-	o.stepsTaken = 0
 }
 
 func (o *OnlineLearningIteration) Iterate(
@@ -190,56 +160,57 @@ func (o *OnlineLearningIteration) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	if o.stepsTaken == 0 {
+	if timestepsHistory.CurrentStepNumber == 1 {
 		// reset the initial condition to the ones put into
-		// the streamer parameters - easier for the user!
+		// the learner stream parameters - easier for the user!
 		stateHistories[partitionIndex].Values.SetRow(
 			0,
-			o.streamerMappings.GetParamsForOptimiser(
-				o.streamerSettings.OtherParams,
+			o.learnerStreamMappings.GetParamsForOptimiser(
+				o.learnerStreamSettings.OtherParams,
 			),
 		)
 	}
-	o.stepsTaken += 1
-	nextTime := timestepsHistory.Values.AtVec(0) +
-		timestepsHistory.NextIncrement
-	o.windowTimesteps.NextIncrements[nextTime] =
-		timestepsHistory.NextIncrement
-	for i, oldEdgeTime := range o.windowEdgeTimes {
-		if o.stepsTaken > o.windowSize {
-			delete(o.windowIterations[i].Data, oldEdgeTime)
-			if i == 0 {
-				delete(o.windowTimesteps.NextIncrements, oldEdgeTime)
-			}
-		}
-		o.windowEdgeTimes[i] = minKey(o.windowIterations[i].Data)
-		o.windowIterations[i].Data[nextTime] =
-			stateHistories[o.streamerIndices[i]].Values.RawRowView(0)
-		o.streamerImplementations.Iterations[i] = o.windowIterations[i]
-		o.streamerImplementations.TerminationCondition =
-			&simulator.NumberOfStepsTerminationCondition{
-				MaxNumberOfSteps: len(o.windowIterations[i].Data) - 1,
-			}
-		o.streamerImplementations.TimestepFunction = o.windowTimesteps
-		o.streamerSettings.InitTimeValue = o.windowEdgeTimes[i]
-		o.streamerSettings.InitStateValues[i] =
-			o.windowIterations[i].Data[o.windowEdgeTimes[i]]
+	windowLength :=
+		stateHistories[partitionIndex].StateHistoryDepth
+	learnerStreamImplementations := &simulator.Implementations{
+		Iterations: make(
+			[]simulator.Iteration,
+			len(o.learnerStreamIndices),
+		),
+		OutputCondition: &simulator.NilOutputCondition{},
+		OutputFunction:  &simulator.NilOutputFunction{},
 	}
-	if o.stepsTaken%o.refitSteps != 0 {
+	for i, index := range o.learnerStreamIndices {
+		learnerStreamImplementations.Iterations[i] =
+			&MemoryIteration{Data: stateHistories[index]}
+		o.learnerStreamSettings.InitStateValues[i] =
+			stateHistories[index].Values.RawRowView(
+				windowLength - 1,
+			)
+	}
+	learnerStreamImplementations.TerminationCondition =
+		&simulator.NumberOfStepsTerminationCondition{
+			MaxNumberOfSteps: windowLength - 1,
+		}
+	learnerStreamImplementations.TimestepFunction =
+		&MemoryTimestepFunction{Data: timestepsHistory}
+	o.learnerStreamSettings.InitTimeValue =
+		timestepsHistory.Values.AtVec(windowLength - 1)
+	if timestepsHistory.CurrentStepNumber%o.refitSteps != 0 {
 		return stateHistories[partitionIndex].Values.RawRowView(0)
 	}
 	newParamValues := o.config.Optimiser.Run(
 		NewObjectiveEvaluator(
-			o.streamerImplementations,
-			o.streamerSettings,
+			learnerStreamImplementations,
+			o.learnerStreamSettings,
 			o.config,
 		),
-		o.streamerMappings.UpdateParamsFromOptimiser(
+		o.learnerStreamMappings.UpdateParamsFromOptimiser(
 			stateHistories[partitionIndex].Values.RawRowView(0),
-			o.streamerSettings.OtherParams,
+			o.learnerStreamSettings.OtherParams,
 		),
 	)
-	return o.streamerMappings.GetParamsForOptimiser(newParamValues)
+	return o.learnerStreamMappings.GetParamsForOptimiser(newParamValues)
 }
 
 // NewOnlineLearningIteration creates a new OnlineLearningIteration.

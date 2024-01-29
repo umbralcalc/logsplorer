@@ -52,14 +52,12 @@ func newImplementationsAndLearningConfigForTests(
 	}
 	iteration := NewMemoryIterationFromCsv(
 		"test_file.csv",
-		0,
 		[]int{1, 2, 3},
 		true,
 	)
 	implementations.Iterations = append(implementations.Iterations, iteration)
 	anotherIteration := NewMemoryIterationFromCsv(
 		"test_file.csv",
-		0,
 		[]int{1, 2, 3},
 		true,
 	)

@@ -9,12 +9,13 @@ other_params:
 - float_params: {}
   int_params:
     streamer_partition_indices: [0]
-    refit_steps: [10]
+    learner_history_depths: [30]
+    refit_steps: [99]
 init_state_values:
-- [0.0, 0.0, 0.0]
+- [0.0, 0.0, 0.0] # these get overwritten
 - [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # these get overwritten
 init_time_value: 0.0
 seeds: [22113355, 234]
 state_widths: [3, 6]
-state_history_depths: [50, 10]
-timesteps_history_depth: 30
+state_history_depths: [50, 50]
+timesteps_history_depth: 50

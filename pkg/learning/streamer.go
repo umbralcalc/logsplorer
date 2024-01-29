@@ -8,12 +8,13 @@ import (
 	"strconv"
 
 	"github.com/umbralcalc/stochadex/pkg/simulator"
+	"gonum.org/v1/gonum/mat"
 )
 
 // MemoryIteration provides a stream of data which is already know from a
 // separate data source and is held in memory.
 type MemoryIteration struct {
-	Data map[float64][]float64
+	Data *simulator.StateHistory
 }
 
 func (m *MemoryIteration) Configure(
@@ -28,12 +29,7 @@ func (m *MemoryIteration) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
-	nextTime := timestepsHistory.Values.AtVec(0) + timestepsHistory.NextIncrement
-	dat, ok := m.Data[nextTime]
-	if !ok {
-		panic("no step in MemoryIteration for time " + fmt.Sprintf("%f", nextTime))
-	}
-	return dat
+	return m.Data.Values.RawRowView(timestepsHistory.CurrentStepNumber - 1)
 }
 
 // NewMemoryIterationFromCsv creates a new MemoryIteration based on data
@@ -41,7 +37,6 @@ func (m *MemoryIteration) Iterate(
 // for time and state.
 func NewMemoryIterationFromCsv(
 	filePath string,
-	timeColumn int,
 	stateColumns []int,
 	skipHeaderRow bool,
 ) *MemoryIteration {
@@ -62,8 +57,8 @@ func NewMemoryIterationFromCsv(
 	if err != nil {
 		log.Fatal("Unable to parse file as CSV for "+filePath, err)
 	}
-	var time float64
-	data := make(map[float64][]float64)
+	data := make([]float64, 0)
+	timeSeriesLength := 0
 	for _, row := range records {
 		if skipHeaderRow {
 			skipHeaderRow = false
@@ -71,14 +66,6 @@ func NewMemoryIterationFromCsv(
 		}
 		floatRow := make([]float64, 0)
 		for i, r := range row {
-			if i == timeColumn {
-				dataPoint, err := strconv.ParseFloat(r, 64)
-				if err != nil {
-					fmt.Printf("Error converting string: %v", err)
-				}
-				time = dataPoint
-				continue
-			}
 			_, ok := stateColumnsMap[i]
 			if !ok {
 				continue
@@ -89,21 +76,34 @@ func NewMemoryIterationFromCsv(
 			}
 			floatRow = append(floatRow, dataPoint)
 		}
-		data[time] = floatRow
+		data = append(data, floatRow...)
+		timeSeriesLength += 1
 	}
-	return &MemoryIteration{Data: data}
+	return &MemoryIteration{
+		Data: &simulator.StateHistory{
+			Values: mat.NewDense(
+				timeSeriesLength,
+				len(stateColumns),
+				data,
+			),
+			StateWidth:        len(stateColumns),
+			StateHistoryDepth: timeSeriesLength,
+		},
+	}
 }
 
 // MemoryTimestepFunction provides a stream of timesteps which already known from
 // a separate data source and is held in memory.
 type MemoryTimestepFunction struct {
-	NextIncrements map[float64]float64
+	Data *simulator.CumulativeTimestepsHistory
 }
 
 func (m *MemoryTimestepFunction) SetNextIncrement(
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) *simulator.CumulativeTimestepsHistory {
-	timestepsHistory.NextIncrement = m.NextIncrements[timestepsHistory.Values.AtVec(0)]
+	i := timestepsHistory.CurrentStepNumber
+	timestepsHistory.NextIncrement =
+		m.Data.Values.AtVec(i) - m.Data.Values.AtVec(i-1)
 	return timestepsHistory
 }
 
@@ -126,9 +126,8 @@ func NewMemoryTimestepFunctionFromCsv(
 	if err != nil {
 		log.Fatal("Unable to parse file as CSV for "+filePath, err)
 	}
-	var increment float64
-	timeIncrements := make(map[float64]float64)
-	for j, row := range records {
+	times := make([]float64, 0)
+	for _, row := range records {
 		if skipHeaderRow {
 			skipHeaderRow = false
 			continue
@@ -137,14 +136,12 @@ func NewMemoryTimestepFunctionFromCsv(
 		if err != nil {
 			fmt.Printf("Error converting string: %v", err)
 		}
-		if j < len(records)-1 {
-			dataPoint, err := strconv.ParseFloat(records[j+1][timeColumn], 64)
-			if err != nil {
-				fmt.Printf("Error converting string: %v", err)
-			}
-			increment = dataPoint - time
-		}
-		timeIncrements[time] = increment
+		times = append(times, time)
 	}
-	return &MemoryTimestepFunction{NextIncrements: timeIncrements}
+	return &MemoryTimestepFunction{
+		Data: &simulator.CumulativeTimestepsHistory{
+			Values:            mat.NewVecDense(len(times), times),
+			StateHistoryDepth: len(times),
+		},
+	}
 }

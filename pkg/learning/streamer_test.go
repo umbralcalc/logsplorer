@@ -13,7 +13,6 @@ func TestCsvFileDataStreaming(t *testing.T) {
 		func(t *testing.T) {
 			iteration := NewMemoryIterationFromCsv(
 				"test_file.csv",
-				0,
 				[]int{1, 2, 3},
 				true,
 			)
@@ -24,6 +23,7 @@ func TestCsvFileDataStreaming(t *testing.T) {
 				&simulator.CumulativeTimestepsHistory{
 					NextIncrement:     1.0,
 					Values:            mat.NewVecDense(2, []float64{1.0, 0.0}),
+					CurrentStepNumber: 1,
 					StateHistoryDepth: 2,
 				},
 			)
@@ -36,6 +36,7 @@ func TestCsvFileDataStreaming(t *testing.T) {
 				&simulator.CumulativeTimestepsHistory{
 					NextIncrement:     1.0,
 					Values:            mat.NewVecDense(2, []float64{1.0, 0.0}),
+					CurrentStepNumber: 1,
 					StateHistoryDepth: 2,
 				},
 			)

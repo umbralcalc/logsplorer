@@ -31,7 +31,6 @@ func newImplementationsAndSimpleLearningConfigForTests(
 	}
 	iteration := learning.NewMemoryIterationFromCsv(
 		"test_file.csv",
-		0,
 		[]int{1, 2, 3},
 		true,
 	)

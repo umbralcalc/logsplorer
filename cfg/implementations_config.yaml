@@ -1,6 +1,6 @@
 simulator: 
   iterations:
-  - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", 0, []int{1, 2, 3}, true)'
+  - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", []int{1, 2, 3}, true)'
   - "learning.NewOnlineLearningIteration(learningConfig)"
   output_condition: "&simulator.NilOutputCondition{}"
   output_function: "&simulator.NilOutputFunction{}"

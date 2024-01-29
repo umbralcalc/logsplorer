@@ -5,7 +5,7 @@ go 1.21.6
 require (
 	github.com/akamensky/argparse v1.4.0
 	github.com/rs/cors v1.10.1
-	github.com/umbralcalc/stochadex v0.0.0-20240127065633-8d8b8183f6c1
+	github.com/umbralcalc/stochadex v0.0.0-20240128174337-e4e6c2ffc642
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 	gonum.org/v1/gonum v0.14.0
 	gopkg.in/yaml.v2 v2.4.0
