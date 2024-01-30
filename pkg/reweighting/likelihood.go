@@ -56,7 +56,7 @@ func (p *ProbabilisticReweightingLogLikelihood) Evaluate(
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) float64 {
 	p.Prob.SetParams(params)
-	p.Statistics.Compute(
+	p.Statistics.Estimate(
 		p.Prob,
 		stateHistories[partitionIndex],
 		timestepsHistory,

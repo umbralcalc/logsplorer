@@ -1,6 +1,6 @@
 # learnadex
 
-The 'learnadex' builds on the capabilities and framework provided by the [stochadex package](https://github.com/umbralcalc/stochadex) to enable maximum a posteriori (MAP) optimisation, dynamical process emulation and approximate inference of generalised stochastic models.
+The 'learnadex' builds on the capabilities and framework provided by the [stochadex package](https://github.com/umbralcalc/stochadex) to enable online learning and provides approximate inference tools for any stochastic simulation.
 
 ## Need more context and documentation?
 

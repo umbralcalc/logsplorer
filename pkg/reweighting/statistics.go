@@ -16,7 +16,9 @@ type Statistics struct {
 	Covariance mat.Symmetric
 }
 
-func (s *Statistics) Compute(
+// Estimate explicitly computes the statistics from a past time series of
+// samples in the stateHistory.
+func (s *Statistics) Estimate(
 	prob ConditionalProbability,
 	stateHistory *simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,

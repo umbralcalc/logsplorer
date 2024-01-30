@@ -3,6 +3,7 @@ package learning
 import (
 	"log"
 
+	"github.com/umbralcalc/learnadex/pkg/params"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gonum.org/v1/gonum/optimize"
 )
@@ -17,23 +18,12 @@ type OptimisationAlgorithm interface {
 	) []*simulator.OtherParams
 }
 
-// NewParamsCopy is a convenience function which copies the input
-// []*simulator.OtherParams to help ensure thread safety.
-func NewParamsCopy(params []*simulator.OtherParams) []*simulator.OtherParams {
-	paramsCopy := make([]*simulator.OtherParams, 0)
-	for i := range params {
-		p := *params[i]
-		paramsCopy = append(paramsCopy, &p)
-	}
-	return paramsCopy
-}
-
 // GonumOptimisationAlgorithm allows any of the gonum optimisers to be
 // used in the learnadex.
 type GonumOptimisationAlgorithm struct {
 	Method   optimize.Method
 	Settings *optimize.Settings
-	mappings *OptimiserParamsMappings
+	mappings *params.OptimiserParamsMappings
 }
 
 func (g *GonumOptimisationAlgorithm) Run(
@@ -41,14 +31,14 @@ func (g *GonumOptimisationAlgorithm) Run(
 	previousParams []*simulator.OtherParams,
 ) []*simulator.OtherParams {
 	if g.mappings == nil {
-		g.mappings = NewOptimiserParamsMappings(previousParams)
+		g.mappings = params.NewOptimiserParamsMappings(previousParams)
 	}
 	problem := optimize.Problem{
 		Func: func(x []float64) float64 {
 			// this copying ensures thread safety (as required by
 			// the gonum optimize package)
 			evaluatorCopy := evaluator.Copy()
-			paramsCopy := NewParamsCopy(previousParams)
+			paramsCopy := params.NewParamsCopy(previousParams)
 			return -evaluatorCopy.Evaluate(
 				g.mappings.UpdateParamsFromOptimiser(x, paramsCopy),
 			)

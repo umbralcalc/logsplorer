@@ -1,6 +1,7 @@
 package learning
 
 import (
+	"github.com/umbralcalc/learnadex/pkg/params"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
@@ -70,46 +71,13 @@ func (i *IterationWithObjective) GetObjective() float64 {
 	return i.cumulativeLogLikelihood
 }
 
-func copySettingsForPartitions(
-	partitionIndices []int,
-	settings *simulator.Settings,
-) *simulator.Settings {
-	settingsCopy := &simulator.Settings{}
-	settingsCopy.InitTimeValue = settings.InitTimeValue
-	settingsCopy.TimestepsHistoryDepth = settings.TimestepsHistoryDepth
-	for _, index := range partitionIndices {
-		paramsCopy := *settings.OtherParams[index]
-		settingsCopy.OtherParams = append(
-			settingsCopy.OtherParams,
-			&paramsCopy,
-		)
-		settingsCopy.InitStateValues = append(
-			settingsCopy.InitStateValues,
-			settings.InitStateValues[index],
-		)
-		settingsCopy.Seeds = append(
-			settingsCopy.Seeds,
-			settings.Seeds[index],
-		)
-		settingsCopy.StateWidths = append(
-			settingsCopy.StateWidths,
-			settings.StateWidths[index],
-		)
-		settingsCopy.StateHistoryDepths = append(
-			settingsCopy.StateHistoryDepths,
-			settings.StateHistoryDepths[index],
-		)
-	}
-	return settingsCopy
-}
-
 // OnlineLearningIteration facilitates online learning by iterating over
 // successive parameter values and rerunning the optimiser over the specified
 // streaming window every 'refitSteps' number of steps.
 type OnlineLearningIteration struct {
 	config                *LearningConfig
 	learnerStreamSettings *simulator.Settings
-	learnerStreamMappings *OptimiserParamsMappings
+	learnerStreamMappings *params.OptimiserParamsMappings
 	learnerStreamIndices  []int
 	refitSteps            int
 }
@@ -142,12 +110,12 @@ func (o *OnlineLearningIteration) Configure(
 				IntParams["learner_history_depths"][i]),
 		)
 	}
-	o.learnerStreamSettings = copySettingsForPartitions(
+	o.learnerStreamSettings = params.CopySettingsForPartitions(
 		o.learnerStreamIndices,
 		settings,
 	)
 	o.learnerStreamSettings.StateHistoryDepths = learnerHistoryDepths
-	o.learnerStreamMappings = NewOptimiserParamsMappings(
+	o.learnerStreamMappings = params.NewOptimiserParamsMappings(
 		o.learnerStreamSettings.OtherParams,
 	)
 	o.refitSteps = int(
