@@ -12,4 +12,7 @@ COPY . ./
 # build the learnadex binary
 RUN go build -o bin/ ./cmd/learnadex
 
+# expose the websocket port
+EXPOSE 2112
+
 ENTRYPOINT ["./bin/learnadex"]

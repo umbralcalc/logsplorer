@@ -18,6 +18,11 @@ go build -o bin/ ./cmd/learnadex
 # run your configs
 ./bin/learnadex --settings ./cfg/settings_config.yaml \
 --implementations ./cfg/implementations_config.yaml
+
+# run your configs with the real-time dashboard on
+./bin/learnadex --settings ./cfg/settings_config.yaml \
+--implementations ./cfg/implementations_config.yaml \
+--dashboard ./cfg/dashboard_config.yaml
 ```
 
 ## Building and running the logs explorer and visualisation app
@@ -42,8 +47,9 @@ go build -o bin/ ./cmd/logsplorer
 docker build -f Dockerfile.learnadex --tag learnadex .
 
 # run the binary in the container with your configs
-docker run learnadex --settings ./cfg/settings_config.yaml \
---implementations ./cfg/implementations_config.yaml
+docker run -p 2112:2112 learnadex --settings ./cfg/settings_config.yaml \
+--implementations ./cfg/implementations_config.yaml \
+--dashboard ./cfg/dashboard_config.yaml
 
 # build the logsplorer container
 docker build -f Dockerfile.logsplorer --tag logsplorer .
