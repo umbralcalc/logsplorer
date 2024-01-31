@@ -1,0 +1,19 @@
+other_params:
+- float_params:
+    exponential_weighting_timescale: [1.0]
+  float_params_mask:
+    exponential_weighting_timescale: [true]
+  int_params: {}
+- float_params: {}
+  int_params:
+    streamer_partition_indices: [0]
+    learner_history_depths: [45]
+    refit_steps: [95]
+init_state_values:
+- [0.0, 0.0, 0.0] # these get overwritten
+- [0.0] # these get overwritten
+init_time_value: 0.0
+seeds: [22113355, 234]
+state_widths: [3, 1]
+state_history_depths: [95, 95]
+timesteps_history_depth: 95
