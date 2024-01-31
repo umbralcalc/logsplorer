@@ -16,7 +16,6 @@ func (p *ProbabilisticReweightingIteration) Configure(
 	settings *simulator.Settings,
 ) {
 	p.Prob.Configure(partitionIndex, settings)
-	p.Prob.SetParams(settings.OtherParams[partitionIndex])
 }
 
 func (p *ProbabilisticReweightingIteration) Iterate(
@@ -25,6 +24,7 @@ func (p *ProbabilisticReweightingIteration) Iterate(
 	stateHistories []*simulator.StateHistory,
 	timestepsHistory *simulator.CumulativeTimestepsHistory,
 ) []float64 {
+	p.Prob.SetParams(params)
 	stateHistory := stateHistories[partitionIndex]
 	currentTime := timestepsHistory.Values.AtVec(0)
 	currentStateValue := stateHistory.Values.RawRowView(0)
