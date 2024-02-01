@@ -57,7 +57,7 @@ func StochadexArgParse() (
 		"dashboard",
 		&argparse.Options{
 			Required: false,
-			Help:     "yaml config path for string implementations",
+			Help:     "yaml config path for dashboard",
 		},
 	)
 	err := parser.Parse(os.Args)
@@ -248,13 +248,13 @@ func main() {
 		stepperOrRunner.Run()
 	}
 }`))
-	file, err := os.CreateTemp("tmp", "*main.go")
+	file, err := os.CreateTemp("/tmp", "*main.go")
 	if err != nil {
-		err := os.Mkdir("tmp", 0755)
+		err := os.Mkdir("/tmp", 0755)
 		if err != nil {
 			panic(err)
 		}
-		file, _ = os.CreateTemp("tmp", "*main.go")
+		file, _ = os.CreateTemp("/tmp", "*main.go")
 	}
 	err = codeTemplate.Execute(
 		file,
