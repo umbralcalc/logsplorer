@@ -144,15 +144,16 @@ func (o *OnlineLearningIteration) Iterate(
 	windowLength := stateHistories[partitionIndex].StateHistoryDepth
 	learnerStreamImplementations := &simulator.Implementations{
 		Iterations: make(
-			[]simulator.Iteration,
+			[][]simulator.Iteration,
 			len(o.learnerStreamIndices),
 		),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 	}
 	for i, index := range o.learnerStreamIndices {
-		learnerStreamImplementations.Iterations[i] =
-			&MemoryIteration{Data: stateHistories[index]}
+		learnerStreamImplementations.Iterations[i] = []simulator.Iteration{
+			&MemoryIteration{Data: stateHistories[index]},
+		}
 		o.learnerStreamSettings.InitStateValues[i] =
 			stateHistories[index].Values.RawRowView(
 				windowLength - 1,

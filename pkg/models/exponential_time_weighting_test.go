@@ -17,7 +17,7 @@ func newImplementationsAndSimpleLearningConfigForTests(
 	conditionalProb reweighting.ConditionalProbability,
 ) (*simulator.Implementations, *learning.LearningConfig) {
 	implementations := &simulator.Implementations{
-		Iterations:      make([]simulator.Iteration, 0),
+		Iterations:      make([][]simulator.Iteration, 0),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
@@ -34,7 +34,10 @@ func newImplementationsAndSimpleLearningConfigForTests(
 		[]int{1, 2, 3},
 		true,
 	)
-	implementations.Iterations = append(implementations.Iterations, iteration)
+	implementations.Iterations = append(
+		implementations.Iterations,
+		[]simulator.Iteration{iteration},
+	)
 	objectives := make([]learning.LogLikelihood, 0)
 	logLike := &reweighting.ProbabilisticReweightingLogLikelihood{
 		Prob:       conditionalProb,

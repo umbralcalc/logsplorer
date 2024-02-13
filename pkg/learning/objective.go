@@ -74,14 +74,19 @@ func NewObjectiveEvaluator(
 	config *LearningConfig,
 ) *ObjectiveEvaluator {
 	dataIterations := make([]*IterationWithObjective, 0)
-	for i, objective := range config.Objectives {
-		iteration := &IterationWithObjective{
-			logLikelihood: objective,
-			iteration:     implementations.Iterations[i],
+	index := 0
+	for parallelIndex, serialIterations := range implementations.Iterations {
+		for serialIndex, iteration := range serialIterations {
+			iterationWithObj := &IterationWithObjective{
+				logLikelihood: config.Objectives[index],
+				iteration:     iteration,
+			}
+			iterationWithObj.Configure(index, settings)
+			dataIterations = append(dataIterations, iterationWithObj)
+			implementations.Iterations[parallelIndex][serialIndex] =
+				iterationWithObj
+			index += 1
 		}
-		iteration.Configure(i, settings)
-		dataIterations = append(dataIterations, iteration)
-		implementations.Iterations[i] = iteration
 	}
 	return &ObjectiveEvaluator{
 		Iterations:      dataIterations,

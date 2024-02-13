@@ -1,7 +1,7 @@
 simulator: 
   iterations:
-  - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", []int{1, 2, 3}, true)'
-  - "learning.NewOnlineLearningIteration(learningConfig)"
+  - - 'learning.NewMemoryIterationFromCsv("dat/test_file.csv", []int{1, 2, 3}, true)'
+  - - "learning.NewOnlineLearningIteration(learningConfig)"
   output_condition: "&simulator.EveryStepOutputCondition{}"
   output_function: "&simulator.NilOutputFunction{}"
   termination_condition: "&simulator.NumberOfStepsTerminationCondition{MaxNumberOfSteps: 99}"

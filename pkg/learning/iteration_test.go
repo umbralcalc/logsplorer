@@ -13,7 +13,7 @@ func newOnlineLearningImplementationsForTests(
 	settings *simulator.Settings,
 ) *simulator.Implementations {
 	implementations := &simulator.Implementations{
-		Iterations:      make([]simulator.Iteration, 0),
+		Iterations:      make([][]simulator.Iteration, 0),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
@@ -35,7 +35,10 @@ func newOnlineLearningImplementationsForTests(
 		DataLink:   &reweighting.NormalDataLinkingLogLikelihood{},
 		Statistics: &reweighting.Statistics{},
 	}
-	implementations.Iterations = append(implementations.Iterations, iteration)
+	implementations.Iterations = append(
+		implementations.Iterations,
+		[]simulator.Iteration{iteration},
+	)
 	learningConfig := &LearningConfig{
 		Objectives:      []LogLikelihood{objective},
 		ObjectiveOutput: &NilObjectiveOutputFunction{},
@@ -46,10 +49,14 @@ func newOnlineLearningImplementationsForTests(
 	}
 	implementations.Iterations = append(
 		implementations.Iterations,
-		NewOnlineLearningIteration(learningConfig),
+		[]simulator.Iteration{NewOnlineLearningIteration(learningConfig)},
 	)
-	for i, iteration := range implementations.Iterations {
-		iteration.Configure(i, settings)
+	index := 0
+	for _, iterations := range implementations.Iterations {
+		for _, iteration := range iterations {
+			iteration.Configure(index, settings)
+			index += 1
+		}
 	}
 	return implementations
 }

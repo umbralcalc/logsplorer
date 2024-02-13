@@ -38,7 +38,7 @@ func newImplementationsAndLearningConfigForTests(
 	settings *simulator.Settings,
 ) (*simulator.Implementations, *LearningConfig) {
 	implementations := &simulator.Implementations{
-		Iterations:      make([]simulator.Iteration, 0),
+		Iterations:      make([][]simulator.Iteration, 0),
 		OutputCondition: &simulator.NilOutputCondition{},
 		OutputFunction:  &simulator.NilOutputFunction{},
 		TerminationCondition: &simulator.NumberOfStepsTerminationCondition{
@@ -55,13 +55,19 @@ func newImplementationsAndLearningConfigForTests(
 		[]int{1, 2, 3},
 		true,
 	)
-	implementations.Iterations = append(implementations.Iterations, iteration)
+	implementations.Iterations = append(
+		implementations.Iterations,
+		[]simulator.Iteration{iteration},
+	)
 	anotherIteration := NewMemoryIterationFromCsv(
 		"test_file.csv",
 		[]int{1, 2, 3},
 		true,
 	)
-	implementations.Iterations = append(implementations.Iterations, anotherIteration)
+	implementations.Iterations = append(
+		implementations.Iterations,
+		[]simulator.Iteration{anotherIteration},
+	)
 	objectives := make([]LogLikelihood, 0)
 	firstObjective := &reweighting.ProbabilisticReweightingLogLikelihood{
 		Prob:       &dummyConditionalProbability{},
