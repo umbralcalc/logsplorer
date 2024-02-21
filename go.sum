@@ -21,8 +21,8 @@ github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZV
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rs/cors v1.10.1 h1:L0uuZVXIKlI1SShY2nhFfo44TYvDPQ1w4oFkUJNfhyo=
 github.com/rs/cors v1.10.1/go.mod h1:XyqrcTp5zjWr1wsJ8PIRZssZ8b/WMcMf71DJnit4EMU=
-github.com/umbralcalc/stochadex v0.0.0-20240216162949-d9532a6f6ad3 h1:Tmm23BR9F/ognixQ4iEPb3JFBx7dRU5JGxnE/vB6LZQ=
-github.com/umbralcalc/stochadex v0.0.0-20240216162949-d9532a6f6ad3/go.mod h1:9/VnLUjd/7PtRSmmElq6SjZ57zgKRsE7tMnKGNxOvIg=
+github.com/umbralcalc/stochadex v0.0.0-20240221140357-fe3a31ec7123 h1:WOZM3Y3jyrnALgqWvcejFb6gVNbq+ZqjsDJeZpEL12s=
+github.com/umbralcalc/stochadex v0.0.0-20240221140357-fe3a31ec7123/go.mod h1:9/VnLUjd/7PtRSmmElq6SjZ57zgKRsE7tMnKGNxOvIg=
 golang.org/x/exp v0.0.0-20240213143201-ec583247a57a h1:HinSgX1tJRX3KsL//Gxynpw5CTOAIPhgL4W8PNiIpVE=
 golang.org/x/exp v0.0.0-20240213143201-ec583247a57a/go.mod h1:CxmFvTBINI24O/j8iY7H1xHzx2i4OsyguNBmN/uPtqc=
 golang.org/x/net v0.21.0 h1:AQyQV4dYCvJ7vGmJyKki9+PBdyvhkSd8EIx/qb0AYv4=
