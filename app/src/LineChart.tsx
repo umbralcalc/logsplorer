@@ -30,7 +30,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
   const [lineColours, setLineColours] = useState<{
-    [filenamePartitionIndex: string]: string
+    [filenamePartitionIndexTime: string]: string
   }>({});
   Chart.register(zoomPlugin);
 
@@ -68,7 +68,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
   }
 
   const processChartData = (data: LineChartProps['data']) => {
-    const result: { [filenamePartitionIndex: string]: {
+    const result: { [filenamePartitionIndexTime: string]: {
       label: string;
       data: {
         x: number;
@@ -84,29 +84,30 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
     }
 
     data.forEach((item) => { 
-      const filenamePartitionIndex = item.log_filename + 
-        " " + String(item.entry.partition_index);
+      const filenamePartitionIndexTime = item.log_filename + 
+        " " + String(item.entry.partition_index) +
+        " time: " + String(item.entry.time) ;
       const objectiveData = item.entry.objective;
 
-      if (!(filenamePartitionIndex in lineColours)) {
+      if (!(filenamePartitionIndexTime in lineColours)) {
         const colour = getRandomColour()
           setLineColours((prevLineColours) => ({
             ...prevLineColours,
-            [filenamePartitionIndex]: colour,
+            [filenamePartitionIndexTime]: colour,
           }));
       }
 
-      if (!(filenamePartitionIndex in result)) {
-        result[filenamePartitionIndex] = {
-          label: `${filenamePartitionIndex}`,
+      if (!(filenamePartitionIndexTime in result)) {
+        result[filenamePartitionIndexTime] = {
+          label: `${filenamePartitionIndexTime}`,
           data: [],
-          borderColor: lineColours[filenamePartitionIndex],
+          borderColor: lineColours[filenamePartitionIndexTime],
           borderWidth: 2,
           fill: false,
         };
       }
 
-      result[filenamePartitionIndex].data.push({
+      result[filenamePartitionIndexTime].data.push({
         x: item.partition_iterations,
         y: objectiveData,
       })
