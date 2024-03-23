@@ -2,20 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import zoomPlugin from 'chartjs-plugin-zoom';
 
-interface FloatParams {
-  [key: string]: number[];
-}
-
-interface IntParams {
-  [key: string]: number[];
-}
-
 interface JsonLogEntry {
   partition_index: number;
+  state: number[];
   time: number;
-  objective: number;
-  float_params: FloatParams;
-  int_params: IntParams;
 }
 
 interface LineChartProps {
@@ -30,7 +20,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
   const [lineColours, setLineColours] = useState<{
-    [filenamePartitionIndexTime: string]: string
+    [filenamePartitionIndex: string]: {[index: number]: string}
   }>({});
   Chart.register(zoomPlugin);
 
@@ -68,7 +58,7 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
   }
 
   const processChartData = (data: LineChartProps['data']) => {
-    const result: { [filenamePartitionIndexTime: string]: {
+    const result: { [filenamePartitionIndex: string]: {
       label: string;
       data: {
         x: number;
@@ -77,44 +67,63 @@ const LineChart: React.FC<LineChartProps> = ({ data }) => {
       borderColor: string;
       borderWidth: number;
       fill: boolean;
-    }} = {};
+    }[]} = {};
 
     if (!data || data.length === 0) {
       return {}; // Return an empty object if there's no data
     }
 
     data.forEach((item) => { 
-      const filenamePartitionIndexTime = item.log_filename + 
-        " " + String(item.entry.partition_index) +
-        " time: " + String(item.entry.time) ;
-      const objectiveData = item.entry.objective;
-
-      if (!(filenamePartitionIndexTime in lineColours)) {
-        const colour = getRandomColour()
+      const filenamePartitionIndex = item.log_filename + 
+        " " + String(item.entry.partition_index);
+      
+      for (let index = 0; index < item.entry.state.length; index++) {
+        if (!(filenamePartitionIndex in lineColours)) {
           setLineColours((prevLineColours) => ({
             ...prevLineColours,
-            [filenamePartitionIndexTime]: colour,
+            [filenamePartitionIndex]: {},
           }));
-      }
+          lineColours[filenamePartitionIndex] = {}
+        }
 
-      if (!(filenamePartitionIndexTime in result)) {
-        result[filenamePartitionIndexTime] = {
-          label: `${filenamePartitionIndexTime}`,
-          data: [],
-          borderColor: lineColours[filenamePartitionIndexTime],
-          borderWidth: 2,
-          fill: false,
-        };
-      }
+        if (!(index in lineColours[filenamePartitionIndex])) {
+          const colour = getRandomColour()
+          setLineColours((prevLineColours) => ({
+            ...prevLineColours,
+            [filenamePartitionIndex]: {
+              ...prevLineColours[filenamePartitionIndex],
+              [index]: colour,
+            },
+          }));
+          lineColours[filenamePartitionIndex][index] = colour
+        }
 
-      result[filenamePartitionIndexTime].data.push({
-        x: item.partition_iterations,
-        y: objectiveData,
-      })
+        if (!(filenamePartitionIndex in result)) {
+          result[filenamePartitionIndex] = [];
+        }
+
+        if (!(index in result[filenamePartitionIndex])) {
+          result[filenamePartitionIndex].push({
+            label: `Element ${index}`,
+            data: [{
+              x: item.entry.time,
+              y: item.entry.state[index],
+            }],
+            borderColor: lineColours[filenamePartitionIndex][index],
+            borderWidth: 2,
+            fill: false,
+          });
+        } else {
+          result[filenamePartitionIndex][index].data.push({
+            x: item.entry.time,
+            y: item.entry.state[index],
+          })
+        }
+      }
     });
 
     return result;
-  };
+  }
 
   const chartData = {
     datasets: Object.values(processChartData(data)).flat()

@@ -1,21 +1,15 @@
 other_params:
 - float_params:
-    means: [0.0, 0.0, 0.0]
-    upper_triangle_cholesky_of_cov_matrix: [3.0, 0.0, 0.0, 3.0, 0.0, 3.0]
-  float_params_mask:
-    means: [true, true, true]
-    upper_triangle_cholesky_of_cov_matrix: [true, false, false, true, false, true]
+    variances: [1.0, 1.0, 1.0, 1.0, 1.0]
   int_params: {}
-- float_params: {}
-  int_params:
-    streamer_partition_indices: [0]
-    learner_history_depths: [45]
-    refit_steps: [95]
+- float_params:
+    variances: [1.0, 1.0, 1.0]
+  int_params: {}
 init_state_values:
-- [0.0, 0.0, 0.0] # these get overwritten
-- [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # these get overwritten
+- [0.45, 1.4, 0.01, -0.13, 0.7]
+- [0.67, -0.01, 0.1]
 init_time_value: 0.0
-seeds: [22113355, 234]
-state_widths: [3, 6]
-state_history_depths: [95, 95]
-timesteps_history_depth: 95
+seeds: [7167, 2939]
+state_widths: [5, 3]
+state_history_depths: [2, 2]
+timesteps_history_depth: 2

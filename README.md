@@ -1,25 +1,6 @@
-# learnadex
+# logsplorer
 
-The 'learnadex' builds on the capabilities and framework provided by the [stochadex package](https://github.com/umbralcalc/stochadex) to enable online learning in a particular way. The stochadex does this already so this is more of an experimental bit of code...
-
-## Building and running the binary
-
-```shell
-# update the go modules
-go mod tidy
-
-# build the binary
-go build -o bin/ ./cmd/learnadex
-
-# run your configs
-./bin/learnadex --settings ./cfg/settings_config.yaml \
---implementations ./cfg/implementations_config.yaml
-
-# run your configs with the real-time dashboard on
-./bin/learnadex --settings ./cfg/settings_config.yaml \
---implementations ./cfg/implementations_config.yaml \
---dashboard ./cfg/dashboard_config.yaml
-```
+This is a visualisation app with logs querying functionality to quickly search through and view JSON log outputs from stochadex simulations.
 
 ## Building and running the logs explorer and visualisation app
 
@@ -36,19 +17,11 @@ go build -o bin/ ./cmd/logsplorer
 
 ![Using Viz](app/public/using-viz.gif)
 
-## Building and running the Docker containers (may need sudo)
+## Building and running the Docker container (may need sudo)
 
 ```shell
-# build the learnadex container
-docker build -f Dockerfile.learnadex --tag learnadex .
-
-# run the binary in the container with your configs
-docker run -p 2112:2112 learnadex --settings ./cfg/settings_config.yaml \
---implementations ./cfg/implementations_config.yaml \
---dashboard ./cfg/dashboard_config.yaml
-
 # build the logsplorer container
-docker build -f Dockerfile.logsplorer --tag logsplorer .
+docker build --tag logsplorer .
 
 # run the binary in the container with your config
 docker run -p 8080:8080 logsplorer --config ./cfg/logsplorer_config.yaml

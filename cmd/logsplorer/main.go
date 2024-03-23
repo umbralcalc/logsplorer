@@ -13,7 +13,7 @@ import (
 
 	"github.com/akamensky/argparse"
 	"github.com/rs/cors"
-	"github.com/umbralcalc/learnadex/pkg/learning"
+	"github.com/umbralcalc/stochadex/pkg/simulator"
 	"gopkg.in/yaml.v2"
 )
 
@@ -105,7 +105,7 @@ func (d *DataFilter) SetValue(value string) error {
 	return nil
 }
 
-// readLogEntries reads a file while apply the filtering logic to its data line-by-line
+// readLogEntries reads a file while applying the filtering logic to its data line-by-line
 // and then returns the corresponding log entry structs which pass through the filter.
 func readLogEntries(
 	filename string,
@@ -121,7 +121,7 @@ func readLogEntries(
 	queryLogEntries := make([]QueryLogEntry, 0)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		var logEntry learning.JsonLogEntry
+		var logEntry simulator.JsonLogEntry
 		line := scanner.Bytes()
 
 		err := json.Unmarshal(line, &logEntry)
@@ -145,38 +145,12 @@ func readLogEntries(
 					include = false
 				}
 			case "time":
-				if filter.Ignore(logEntry.Time) {
+				if filter.Ignore(logEntry.CumulativeTimesteps) {
 					include = false
 				}
 			case "partition_index":
 				if filter.Ignore(float64(logEntry.PartitionIndex)) {
 					include = false
-				}
-			case "objective":
-				if filter.Ignore(logEntry.Objective) {
-					include = false
-				}
-			default:
-				_, ok := logEntry.FloatParams[param]
-				if !ok {
-					_, ok = logEntry.IntParams[param]
-					if !ok {
-						fmt.Println("API Error: param not available:", param)
-						return nil, nil
-					}
-					for _, value := range logEntry.IntParams[param] {
-						if filter.Ignore(float64(value)) {
-							include = false
-							break
-						}
-					}
-				} else {
-					for _, value := range logEntry.FloatParams[param] {
-						if filter.Ignore(value) {
-							include = false
-							break
-						}
-					}
 				}
 			}
 			if !include {

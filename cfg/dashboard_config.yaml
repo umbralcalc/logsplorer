@@ -1,6 +1,0 @@
-address: ":2112"
-handle: "/dashboard"
-millisecond_delay: 200
-# change this to where the stochadex dashboard app is
-react_app_location: "../stochadex/app/"
-launch_dashboard: true
