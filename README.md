@@ -1,10 +1,6 @@
 # learnadex
 
-The 'learnadex' builds on the capabilities and framework provided by the [stochadex package](https://github.com/umbralcalc/stochadex) to enable online learning and provides approximate inference tools for any stochastic simulation.
-
-## Need more context and documentation?
-
-The design, development, implementation details behind and practical documentation for the 'learnadex' can all be found in **Part 1** of this very delightful book: [Worlds of Observation](https://umbralcalc.github.io/worlds-of-observation/).
+The 'learnadex' builds on the capabilities and framework provided by the [stochadex package](https://github.com/umbralcalc/stochadex) to enable online learning in a particular way. The stochadex does this already so this is more of an experimental bit of code...
 
 ## Building and running the binary
 
